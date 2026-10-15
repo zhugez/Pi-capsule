@@ -6,6 +6,7 @@
   "defaultThinkingLevel": "medium",
   "packages": [
     "npm:pi-subagents",
+    "npm:pi-fast",
     "npm:@ff-labs/pi-fff",
     "npm:@narumitw/pi-btw",
     "npm:@quintinshaw/pi-dynamic-workflows",
