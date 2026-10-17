@@ -9,7 +9,11 @@
 # "devin" is an ACP alias for acp:devin using devin acp via acpx
 # "acp:devin" also uses that Devin default command
 # Use acp:<target> to run an optional user-installed acpx target, for example acp:gemini
-agent: auto
+agent: pi
+agent_config:
+  pi:
+    model: antigravity/gemini-3.8-flash
+    effort: medium
 
 # Optional path to the user-installed acpx binary for acp:<target> agents and ACP aliases
 # acpx_path: acpx
