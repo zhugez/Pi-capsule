@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Snapshot ~/.pi/agent config into ./agent. Secrets are never copied.
 set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="${PI_AGENT_DIR:-$HOME/.pi/agent}"
-DST="$(cd "$(dirname "$0")/.." && pwd)/agent"
+DST="$ROOT/agent"
+HOME_DST="$ROOT/home"
 
 rm -rf "$DST" && mkdir -p "$DST"
 
@@ -12,17 +14,21 @@ done
 
 # Local package paths only exist on this machine: rewrite to git:<origin> when possible.
 if [ -f "$DST/settings.json" ]; then
-  tmp="$(mktemp)"
-  jq -c '.packages // [] | .[] | (if type=="string" then . else .source end)' "$DST/settings.json" -r |
+  map='{}'
   while read -r src; do
     case "$src" in /*|~*) ;; *) continue ;; esac
     url="$(git -C "$src" remote get-url origin 2>/dev/null || true)"
     if [ -z "$url" ]; then echo "warn: local package $src has no git origin, left as-is" >&2; continue; fi
     url="${url#https://}"; url="${url#git@}"; url="${url/://}"; url="${url%.git}"
-    jq --arg old "$src" --arg new "git:$url" '.packages |= map(
-      if . == $old then $new elif type=="object" and .source == $old then .source = $new else . end)' \
-      "$DST/settings.json" > "$tmp" && mv "$tmp" "$DST/settings.json"
-  done
+    map="$(jq --arg k "$src" --arg v "git:$url" '. + {($k): $v}' <<< "$map")"
+  done < <(jq -r '.packages // [] | .[] | (if type=="string" then . else .source end)' "$DST/settings.json")
+  if [ "$map" != "{}" ]; then
+    tmp="$(mktemp)"
+    jq --argjson map "$map" '.packages |= map(
+      if type=="string" then ($map[.] // .)
+      elif type=="object" and .source then .source = ($map[.source] // .source)
+      else . end)' "$DST/settings.json" > "$tmp" && mv "$tmp" "$DST/settings.json"
+  fi
 fi
 
 # models.json: replace literal apiKeys with an env var reference ($<PROVIDER>_API_KEY).
@@ -41,7 +47,6 @@ done
 
 # Companion tool configs, mirrored under ./home. State/caches stay local.
 DOTFILES=(.no-mistakes/config.yaml .config/rtk/config.toml .config/rtk/filters.toml .config/treehouse/config.toml .gemini/GEMINI.md)
-HOME_DST="$(dirname "$DST")/home"
 rm -rf "$HOME_DST"
 for rel in "${DOTFILES[@]}"; do
   [ -f "$HOME/$rel" ] && mkdir -p "$(dirname "$HOME_DST/$rel")" && cp "$HOME/$rel" "$HOME_DST/$rel"

@@ -16,13 +16,6 @@ import { isToolCallEventType } from "@earendil-works/pi-coding-agent"
 const REWRITE_TIMEOUT_MS = 2_000
 const MIN_SUPPORTED_RTK_MINOR = 23
 
-// Parse "X.Y.Z" semver, return [major, minor, patch] or null.
-function parseSemver(raw: string): [number, number, number] | null {
-  const m = raw.trim().match(/(\d+)\.(\d+)\.(\d+)/)
-  if (!m) return null
-  return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)]
-}
-
 // Calls `rtk rewrite`; returns the rewritten command or null (pass through).
 async function rewriteCommand(
   pi: ExtensionAPI,
@@ -33,8 +26,7 @@ async function rewriteCommand(
     timeout: REWRITE_TIMEOUT_MS,
     signal,
   })
-  if (result.killed) return null
-  if (result.code !== 0 && result.code !== 3) return null
+  if (result.killed || (result.code !== 0 && result.code !== 3)) return null
   return result.stdout.trim() || null
 }
 
@@ -47,13 +39,10 @@ export default async function (pi: ExtensionAPI) {
   }
 
   // Warn and bail if rtk predates 0.23.0 (when `rtk rewrite` was introduced).
-  const parsed = parseSemver(ver.stdout.replace(/^rtk\s+/, ""))
-  if (parsed) {
-    const [major, minor] = parsed
-    if (major === 0 && minor < MIN_SUPPORTED_RTK_MINOR) {
-      console.warn(`[rtk] rtk ${ver.stdout.trim()} is too old (need >= 0.23.0) — extension disabled`)
-      return
-    }
+  const [, major, minor] = ver.stdout.match(/(\d+)\.(\d+)/) ?? []
+  if (major === "0" && Number(minor) < MIN_SUPPORTED_RTK_MINOR) {
+    console.warn(`[rtk] rtk ${ver.stdout.trim()} is too old (need >= 0.23.0) — extension disabled`)
+    return
   }
 
   pi.on("tool_call", async (event, ctx) => {
