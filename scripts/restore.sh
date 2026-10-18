@@ -14,6 +14,17 @@ for f in "$SRC"/*; do
 done
 chmod 600 "$DST/models.json" 2>/dev/null || true
 
+# Deduplicate skills if ~/.agents/skills exists: symlink so Pi canonicalizes without collision warnings.
+if [ -d "$HOME/.agents/skills" ] && [ -d "$DST/skills" ]; then
+  for s in "$DST/skills"/*; do
+    name="$(basename "$s")"
+    if [ -d "$HOME/.agents/skills/$name" ]; then
+      rm -rf "$s"
+      ln -s "../../../.agents/skills/$name" "$s"
+    fi
+  done
+fi
+
 # Dotfiles of companion tools, mirrored from ~ (see DOTFILES in export.sh).
 if [ -d "$ROOT/home" ]; then
   (cd "$ROOT/home" && find . -type f) | while read -r rel; do
