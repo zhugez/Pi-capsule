@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Global pre-commit hook: intercept and prevent accidental secret/token leaks.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect -v --staged
+fi

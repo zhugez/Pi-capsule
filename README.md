@@ -13,6 +13,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup. One script sn
   - [no-mistakes](https://github.com/kunchenguid/no-mistakes) — git push gate, plus a global `git gate` alias · `~/.no-mistakes/config.yaml`
   - [rtk](https://github.com/rtk-ai/rtk) — token-saving CLI proxy, hooked into Pi via `rtk init -g --agent pi` · `~/.config/rtk/*.toml`
   - [treehouse](https://github.com/kunchenguid/treehouse) — reusable worktree pool · `~/.config/treehouse/config.toml`
+  - [gitleaks](https://github.com/gitleaks/gitleaks) — secret scanner CLI, integrated into global git pre-commit hook and Pi (`/gitleaks`) · `~/.config/git/hooks/pre-commit`
 - **Extension prefs** — `pi-fff.json`, `subscription-usage-prefs.json`, plus `AGENTS.md` / `SYSTEM.md` / `keybindings.json` when present.
 
 ## How it works

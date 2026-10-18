@@ -42,7 +42,24 @@ no-mistakes https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/
 rtk https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh
 treehouse https://kunchenguid.github.io/treehouse/install.sh
 TOOLS
+
+# Gitleaks: secret scanner CLI (installed to ~/.local/bin if missing)
+if ! command -v gitleaks >/dev/null; then
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
+  [ "$arch" = "x86_64" ] && arch="x64"
+  [ "$arch" = "aarch64" ] && arch="arm64"
+  mkdir -p "$HOME/.local/bin"
+  curl -fsSL "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_${os}_${arch}.tar.gz" 2>/dev/null | tar -xz -C "$HOME/.local/bin" gitleaks 2>/dev/null || true
+  chmod +x "$HOME/.local/bin/gitleaks" 2>/dev/null || true
+fi
 export PATH="$HOME/.local/bin:$PATH"
+
+# Global git hooks: enable pre-commit secret leak guardrail via gitleaks
+if [ -f "$HOME/.config/git/hooks/pre-commit" ]; then
+  chmod +x "$HOME/.config/git/hooks/pre-commit"
+  git config --global core.hooksPath "$HOME/.config/git/hooks"
+fi
 
 # `git gate`: enable the no-mistakes gate in a repo and route plain `git push` through it.
 git config --global alias.gate '!no-mistakes init && git config remote.pushDefault no-mistakes'

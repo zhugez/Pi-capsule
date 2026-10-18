@@ -46,7 +46,7 @@ for d in skills extensions; do
 done
 
 # Companion tool configs, mirrored under ./home. State/caches stay local.
-DOTFILES=(.no-mistakes/config.yaml .config/rtk/config.toml .config/rtk/filters.toml .config/treehouse/config.toml .gemini/GEMINI.md)
+DOTFILES=(.no-mistakes/config.yaml .config/rtk/config.toml .config/rtk/filters.toml .config/treehouse/config.toml .gemini/GEMINI.md .config/git/hooks/pre-commit)
 rm -rf "$HOME_DST"
 for rel in "${DOTFILES[@]}"; do
   [ -f "$HOME/$rel" ] && mkdir -p "$(dirname "$HOME_DST/$rel")" && cp "$HOME/$rel" "$HOME_DST/$rel"
