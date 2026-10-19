@@ -21,7 +21,7 @@ write exactly the artifact the ticket requests. no orphan files.
 
 ## operational workflow (100% native local pipeline)
 
-helper scripts live in `~/.gemini/scripts/android-re/`. execute long decompilations inline via the timeout wrapper (`GEMINI.md` §0.20).
+helper scripts live in `~/.gemini/scripts/android-re/`. execute long decompilations or emulator boots inline via the timeout wrapper (`GEMINI.md` §0.20).
 
 ### phase 0: fingerprint before decompiling
 run `bash ~/.gemini/scripts/android-re/fingerprint.sh <target.apk|target.xapk>` first.
@@ -72,6 +72,14 @@ run `bash ~/.gemini/scripts/android-re/find-api-calls.sh <output>/sources/` (`--
 - **Apollo GraphQL**: `ApolloClient.serverUrl`, `OPERATION_DOCUMENT` in generated query/mutation classes.
 - **Obfuscation fallback (`--paths`)**: extract quoted path-literal strings (`"/v1/..."`, `"/api/..."`) which survive R8 inlining.
 
+### phase 6: lab verification (micro & macro runtime proof)
+1. **lab c — micro-level native `.so` & JNI verification (no emulator required):**
+   - **x86_64 `.so` present:** map ELF segments directly with `mmap` + PLT hooks in C (`gcc`) and invoke `Java_*` / internal functions natively.
+   - **arm64-v8a `.so` only:** run via standalone Unidbg ARM64 harness using `HookZz` inline hooks and `DalvikVM` JNI emulation.
+2. **lab b — macro-level full Android KVM emulator:**
+   - warm-boots Android (`x86_64`, `userdebug` with `adb root`) from KVM snapshot in ~3 seconds.
+   - install target APK, trigger exported Activities/Services/Providers/DeepLinks via `adb shell am`, and capture `adb logcat -d -s AndroidRuntime:E`.
+
 ## components
 
-THE FINGERPRINT, THE DECOMPILE, THE MANIFEST, THE METADATA-RECOVER, THE CALLFLOW, THE DI-MAP, THE ENDPOINT-EXTRACT, THE JNI-BRIDGE.
+THE FINGERPRINT, THE DECOMPILE, THE MANIFEST, THE METADATA-RECOVER, THE CALLFLOW, THE DI-MAP, THE ENDPOINT-EXTRACT, THE JNI-BRIDGE, THE LAB-VERIFY.
