@@ -10,12 +10,9 @@
       "description": "Local Laya structured classification and scoring; advisory decisions, not code generation or action authorization."
     },
     "cloudflare": {
-      "url": "https://mcp.cloudflare.com/mcp"
-    },
-    "exomind": {
-      "command": "exom",
-      "args": ["mcp", "--notes-root", "/home/dev/Yasna-Memory"],
-      "description": "ExoMind persistent memory and knowledge recall server"
+      "url": "https://mcp.cloudflare.com/mcp",
+      "exposure": "deferred",
+      "description": "Cloudflare documentation and account tools."
     }
   }
 }
