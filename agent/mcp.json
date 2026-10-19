@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "laya": {
+      "command": "/home/dev/.venvs/laya/bin/laya-mcp-server",
+      "env": {
+        "LAYA_DEVICE": "cpu",
+        "LAYA_PRELOAD": "0"
+      },
+      "exposure": "deferred",
+      "description": "Local Laya structured classification and scoring; advisory decisions, not code generation or action authorization."
+    },
+    "cloudflare": {
+      "url": "https://mcp.cloudflare.com/mcp"
+    },
+    "exomind": {
+      "command": "exom",
+      "args": ["mcp", "--notes-root", "/home/dev/Yasna-Memory"],
+      "description": "ExoMind persistent memory and knowledge recall server"
+    }
+  }
+}

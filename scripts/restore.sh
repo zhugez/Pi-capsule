@@ -66,6 +66,11 @@ if ! command -v agent-browser >/dev/null; then
   npm install -g agent-browser 2>/dev/null && agent-browser install 2>/dev/null || true
 fi
 
+# exom: ExoMind knowledge & memory runtime
+if ! command -v exom >/dev/null; then
+  cargo install --git https://github.com/zhugez/ExoMind 2>/dev/null || true
+fi
+
 # `git gate`: enable the no-mistakes gate in a repo and route plain `git push` through it.
 git config --global alias.gate '!no-mistakes init && git config remote.pushDefault no-mistakes'
 

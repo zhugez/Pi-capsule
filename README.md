@@ -15,6 +15,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup. One script sn
   - [treehouse](https://github.com/kunchenguid/treehouse) — reusable worktree pool · `~/.config/treehouse/config.toml`
   - [gitleaks](https://github.com/gitleaks/gitleaks) — secret scanner CLI, integrated into global git pre-commit hook and Pi (`/gitleaks`) · `~/.config/git/hooks/pre-commit`
   - [agent-browser](https://github.com/vercel-labs/agent-browser) — fast browser automation CLI for AI agents (Rust CLI + Chrome CDP) · `~/.agent-browser/config.json`
+  - [ExoMind](https://github.com/zhugez/ExoMind) — portable knowledge & memory runtime (`exom`)
 - **Extension prefs** — `pi-fff.json`, `subscription-usage-prefs.json`, plus `AGENTS.md` / `SYSTEM.md` / `keybindings.json` when present.
 
 ## How it works

@@ -8,7 +8,7 @@ HOME_DST="$ROOT/home"
 
 rm -rf "$DST" && mkdir -p "$DST"
 
-for f in settings.json pi-fff.json subscription-usage-prefs.json AGENTS.md SYSTEM.md keybindings.json; do
+for f in settings.json pi-fff.json subscription-usage-prefs.json mcp.json AGENTS.md SYSTEM.md keybindings.json; do
   [ -f "$SRC/$f" ] && cp "$SRC/$f" "$DST/$f"
 done
 
