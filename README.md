@@ -54,7 +54,17 @@ Then sign in to OAuth providers, and run `git gate` inside each repo you want ga
 
 ```text
 /login antigravity
+/antigravity.accounts
+/antigravity.refresh
+/usage refresh antigravity
 ```
+
+After upgrading a Google subscription, select that account with
+`/antigravity.accounts switch <email>`; switching automatically refreshes its available
+models. Use `/antigravity.refresh` to retry a failed refresh, and
+`/usage refresh antigravity` to refresh quota and plan labels. pi-pulse reads each account's paid tier (including
+Google AI Ultra) from the API; it does not assume every linked account is Pro.
+Model catalogs and account credentials remain local and are not included in the capsule.
 
 ```bash
 cd my-repo && git gate   # no-mistakes init + plain `git push` now goes through the gate

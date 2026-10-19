@@ -10,10 +10,6 @@
     "npm:@narumitw/pi-btw",
     "npm:@vigolium/piolium",
     "git:github.com/zhugez/pi-pulse",
-    {
-      "source": "git:github.com/DietrichGebert/ponytail@e15862bb04d04285233a164460ced063941d9ef5",
-      "skills": []
-    },
     "npm:pi-fast",
     "npm:pi-mcp-adapter"
   ],
