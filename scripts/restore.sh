@@ -61,6 +61,11 @@ if [ -f "$HOME/.config/git/hooks/pre-commit" ]; then
   git config --global core.hooksPath "$HOME/.config/git/hooks"
 fi
 
+# agent-browser: browser automation CLI for AI agents
+if ! command -v agent-browser >/dev/null; then
+  npm install -g agent-browser 2>/dev/null && agent-browser install 2>/dev/null || true
+fi
+
 # `git gate`: enable the no-mistakes gate in a repo and route plain `git push` through it.
 git config --global alias.gate '!no-mistakes init && git config remote.pushDefault no-mistakes'
 
