@@ -25,12 +25,12 @@ if [ -d "$HOME/.agents/skills" ] && [ -d "$DST/skills" ]; then
   done
 fi
 
-# Dotfiles of companion tools, mirrored from ~ (see DOTFILES in export.sh).
+# Dotfiles of companion tools, mirrored from ~ (see DOTFILES/DOTDIRS in export.sh).
 if [ -d "$ROOT/home" ]; then
   (cd "$ROOT/home" && find . -type f) | while read -r rel; do
     mkdir -p "$(dirname "$HOME/$rel")"
     [ -e "$HOME/$rel" ] && cp "$HOME/$rel" "$HOME/$rel.bak"
-    cp "$ROOT/home/$rel" "$HOME/$rel"
+    cp -p "$ROOT/home/$rel" "$HOME/$rel"
   done
 fi
 
