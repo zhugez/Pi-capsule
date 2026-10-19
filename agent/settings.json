@@ -15,8 +15,7 @@
       "skills": []
     },
     "npm:pi-fast",
-    "npm:pi-mcp-adapter",
-    "npm:@saccolabs/pi-claude-cli"
+    "npm:pi-mcp-adapter"
   ],
   "extensions": [
     "-builtin:mcp"
