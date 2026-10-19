@@ -3,3 +3,6 @@
 # never commit these
 auth.json
 antigravity-accounts.json
+*.state.json
+.agent-browser/states/
+.agent-browser/screenshots/

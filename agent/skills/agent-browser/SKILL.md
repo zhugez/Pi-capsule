@@ -84,6 +84,21 @@ agent-browser react tree               # Inspect React component tree
 agent-browser vitals                   # Core Web Vitals (LCP, CLS, TTFB, INP)
 ```
 
+### 7. Zero-Bloat Orchestration via Code Mode (`code_exec`)
+For multi-step workflows (scraping, filling multi-step forms, or table extraction), avoid flooding conversation turns with intermediate snapshots. Run a batched sequence inside `code_exec` and return only the final result:
+
+```javascript
+// Inside code_exec:
+const { stdout } = await exec("agent-browser", [
+  "batch", "--bail",
+  "open https://example.com/data",
+  "wait --load networkidle",
+  "snapshot -i --json"
+]);
+const tree = JSON.parse(stdout);
+return tree;
+```
+
 ---
 
 ## Specialized Skills (served directly by CLI)

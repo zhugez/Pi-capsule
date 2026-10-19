@@ -1,0 +1,7 @@
+{
+  "headed": false,
+  "defaultTimeout": 25000,
+  "colorScheme": "dark",
+  "screenshotDir": "/home/dev/.agent-browser/screenshots",
+  "screenshotFormat": "png"
+}
