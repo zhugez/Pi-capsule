@@ -15,7 +15,8 @@
       "skills": []
     },
     "npm:pi-fast",
-    "npm:pi-mcp-adapter"
+    "npm:pi-mcp-adapter",
+    "npm:@saccolabs/pi-claude-cli"
   ],
   "extensions": [
     "-builtin:mcp"
@@ -23,16 +24,36 @@
   "quietStartup": true,
   "compaction": {
     "modelOverrides": {
-      "macmini-codex/gpt-6.1-sol": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-6-astra": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-6-sol": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-6-luna": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-reserve": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-5.6-sol": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-5.6-terra": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-5.6-luna": { "reserveTokens": 348800 },
-      "macmini-codex/gpt-5.5": { "reserveTokens": 108800 },
-      "macmini-codex/codex-auto-review": { "reserveTokens": 348800 }
+      "macmini-codex/gpt-6.1-sol": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-6-astra": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-6-sol": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-6-luna": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-reserve": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-5.6-sol": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-5.6-terra": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-5.6-luna": {
+        "reserveTokens": 348800
+      },
+      "macmini-codex/gpt-5.5": {
+        "reserveTokens": 108800
+      },
+      "macmini-codex/codex-auto-review": {
+        "reserveTokens": 348800
+      }
     }
   },
   "images": {

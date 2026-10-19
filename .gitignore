@@ -4,5 +4,6 @@
 auth.json
 antigravity-accounts.json
 *.state.json
+*.lock
 .agent-browser/states/
 .agent-browser/screenshots/
