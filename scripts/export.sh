@@ -40,8 +40,8 @@ if [ -f "$SRC/models.json" ]; then
     "$SRC/models.json" > "$DST/models.json"
 fi
 
-# Skills and loose extensions: dereference symlinks so the repo is self-contained.
-for d in skills extensions; do
+# Skills, prompts, and loose extensions: dereference symlinks so the repo is self-contained.
+for d in skills prompts extensions; do
   [ -d "$SRC/$d" ] && cp -rL "$SRC/$d" "$DST/$d"
 done
 
