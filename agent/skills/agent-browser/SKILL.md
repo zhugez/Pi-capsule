@@ -2,14 +2,15 @@
 name: agent-browser
 description: >
   Browser automation CLI for AI agents (fast native Rust CLI via Chrome CDP).
-  MUST USE whenever interacting with websites: opening URLs, navigating pages,
-  clicking buttons, filling forms, taking screenshots, inspecting DOM/React state,
-  scraping JavaScript-heavy / dynamic SPAs, testing web apps, or authenticating into sites.
-  Replaces Selenium/Playwright/Puppeteer with instant accessibility snapshots (@e1, @e2 refs).
+  MUST USE whenever interacting with websites: navigating pages, filling forms,
+  clicking buttons, taking screenshots, extracting data, scraping dynamic SPAs,
+  testing web apps, authenticating, or reverse-engineering APIs.
+  Also covers exploratory testing (dogfood), Electron desktop apps (VS Code, Figma, Slack),
+  Slack automation, or recording HAR traffic (derive-client).
 allowed-tools: Bash(agent-browser:*), Bash(npx agent-browser:*)
 ---
 
-# agent-browser — fast browser automation CLI for AI agents
+# agent-browser — Fast browser automation CLI for AI agents
 
 Chrome/Chromium via CDP with accessibility-tree snapshots and compact `@eN` element refs.
 Trained for web navigation, form filling, clicking, dynamic scraping, taking screenshots, and web testing.
@@ -82,3 +83,17 @@ agent-browser open --enable react-devtools http://localhost:3000
 agent-browser react tree               # Inspect React component tree
 agent-browser vitals                   # Core Web Vitals (LCP, CLS, TTFB, INP)
 ```
+
+---
+
+## Specialized Skills (served directly by CLI)
+
+When dealing with specialized workflows, run the corresponding command to get full instructions and patterns:
+
+- **Full Reference:** `agent-browser skills get core --full` (complete command listing, flags, and templates)
+- **Exploratory Testing / QA:** `agent-browser skills get dogfood` (systematic testing, finding bugs, repro steps + screenshots + video)
+- **Reverse-engineer APIs:** `agent-browser skills get derive-client` (record HAR, find endpoints, generate standalone client)
+- **Desktop Electron Apps:** `agent-browser skills get electron` (automate VS Code, Discord, Figma, Slack via CDP port)
+- **Slack Workspace:** `agent-browser skills get slack` (read unreads, send messages, search channels)
+- **Vercel Protected Deployments:** `agent-browser skills get protected-vercel-deployments` (bypass Vercel Auth with OIDC tokens)
+- **Vercel Sandbox:** `agent-browser skills get vercel-sandbox` (run inside microVMs)
