@@ -3,5 +3,6 @@
   "defaultTimeout": 25000,
   "colorScheme": "dark",
   "screenshotDir": "/home/dev/.agent-browser/screenshots",
-  "screenshotFormat": "png"
+  "screenshotFormat": "png",
+  "args": "--disable-gpu,--no-sandbox,--disable-dev-shm-usage"
 }
