@@ -1,4 +1,4 @@
-// /home/dev/.pi/agent/extensions/prompt-healer.ts
+// /home/dev/.pi/agent/extensions/dejavu.ts
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type {
@@ -102,19 +102,19 @@ function findTrailingTurn(entries: ProjectedSessionEntry[]) {
   return {};
 }
 
-export default function promptHealerExtension(pi: ExtensionAPI) {
+export default function dejavuExtension(pi: ExtensionAPI) {
   let enabled = true;
   const attemptsByUserEntry = new Map<string, number>();
   const originalPromptByUserEntry = new Map<string, string>();
   const history: Array<{ stage: 1 | 2; reason: string; replacements: Array<{ from: string; to: string }> }> = [];
 
-  pi.registerCommand("heal", {
-    description: "Inspect or control Prompt Auto-Healer (/heal [on|off|status|test <prompt>])",
+  pi.registerCommand("dejavu", {
+    description: "Inspect or control DejaVu matrix rewriter (/dejavu [on|off|status|test <prompt>])",
     handler: async (args, ctx) => {
       const trimmed = (args ?? "").trim();
       if (trimmed === "on" || trimmed === "off") {
         enabled = trimmed === "on";
-        ctx.ui.notify(`[Auto-Healer] ${enabled ? "Enabled" : "Disabled"} automatic prompt healing.`, enabled ? "info" : "warning");
+        ctx.ui.notify(`🐈‍⬛ [dejavu] ${enabled ? "Enabled" : "Disabled"} automatic matrix rewrite.`, enabled ? "info" : "warning");
         return;
       }
       if (trimmed.startsWith("test ")) {
@@ -122,7 +122,7 @@ export default function promptHealerExtension(pi: ExtensionAPI) {
         const diff = replacements.length
           ? replacements.map((r) => `  • "${r.from}" -> "${r.to}"`).join("\n")
           : "  • (no lexical matches — applied lab specification framing)";
-        ctx.ui.notify(`[Auto-Healer Dry Run]\nReplacements:\n${diff}\n\nOutput:\n${rewritten}`, "info");
+        ctx.ui.notify(`🐈‍⬛ [dejavu dry-run]\nReplacements:\n${diff}\n\nOutput:\n${rewritten}`, "info");
         return;
       }
 
@@ -136,9 +136,9 @@ export default function promptHealerExtension(pi: ExtensionAPI) {
               return `${i + 1}. [Stage ${h.stage}] (${h.reason}) ${diffs}`;
             })
             .join("\n")
-        : "No prompts healed in this session yet.";
+        : "No glitches rewritten in this session yet.";
 
-      ctx.ui.notify(`[Auto-Healer Status] ${enabled ? "ACTIVE" : "DISABLED"} | Total healed: ${history.length}\n${recent}`, "info");
+      ctx.ui.notify(`🐈‍⬛ [dejavu] ${enabled ? "ACTIVE" : "DISABLED"} | Rewritten: ${history.length}\n${recent}`, "info");
     },
   });
 
@@ -154,7 +154,7 @@ export default function promptHealerExtension(pi: ExtensionAPI) {
     const userEntryId = userEntry.sourceEntry.id;
     const prevAttempts = attemptsByUserEntry.get(userEntryId) ?? 0;
     if (prevAttempts >= 2) {
-      ctx.ui.notify(`[Auto-Healer] Reached max 2 escalation attempts for entry ${userEntryId.slice(0, 8)} (${reason}).`, "warning");
+      ctx.ui.notify(`🐈‍⬛ [dejavu] Max 2 escalation attempts reached for ${userEntryId.slice(0, 8)} (${reason}).`, "warning");
       return;
     }
 
@@ -186,7 +186,7 @@ export default function promptHealerExtension(pi: ExtensionAPI) {
           : "  • Applied canonical local-lab engineering framing"
         : "  • Wrote canonical spec to ./.pi_spec.md and re-queued read instruction";
 
-    ctx.ui.notify(`⚡ [Auto-Healer] Intercepted (${reason}) — Stage ${stage}/2:\n${diffSummary}`, "warning");
+    ctx.ui.notify(`🐈‍⬛ [dejavu] Glitch intercepted (${reason}) — Stage ${stage}/2:\n${diffSummary}`, "warning");
 
     const entries: SessionBoundaryDraft[] = [
       { type: "context_edit", targetId: assistantEntry.sourceEntry.id, replacement: null },
