@@ -115,7 +115,7 @@ scan: aob with mask. module base + rva. chain shape {module, rva, offsets[], dis
 hook: iat is the stable native path. inline .text: VirtualProtectEx → trampoline → FlushInstructionCache. vtable: swap function pointer. swapchain: Present vtable index 8.
 draw: external overlay — WS_EX_LAYERED|WS_EX_TRANSPARENT window, D3D11CreateDeviceAndSwapChain, imgui init, render on Present. w2s: viewMatrix × worldPos → ndc → screen, clip if w<0.
 aim: entity list parse. bone selection head/neck/chest. fov: angle between view forward and target. smoothing: delta/smoothingFactor per tick. prediction: targetPos + targetVelocity*(distance/projectileSpeed). input: SendInput / mouse_event / SetCursorPos.
-bypass: minimal handle rights. return address spoofing: synthetic stack frames, gadget chains, NtContinue, exception-based unwinding. callback enum. module analysis: PsLoadedModuleList, PEB->Ldr. manual mapping without LoadLibrary.
+bypass: minimal handle rights. return address spoofing: synthetic stack frames, gadget chains, NtContinue, exception-based unwinding. callback enum. module analysis: PsLoadedModuleList, PEB->Ldr. manual mapping without LoadLibrary. dynamic SSN resolution (EAT neighbor walk) + indirect `syscall; ret` gadget dispatch inside `ntdll.dll`. clean `.text` section restoration from `\KnownDlls\` or suspended process. `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS` + `BLOCK_NON_MICROSOFT_BINARIES` + PEB command-line reconciliation.
 engine re: source2 — entity list, view matrix, bone matrix, player pawn chain. unreal — GNames / GUObjectArray / FName pool. unity/il2cpp — il2cpp_domain_get, class/field walk.
 
 ## domain index
