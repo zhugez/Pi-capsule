@@ -46,7 +46,7 @@ for d in skills prompts extensions; do
 done
 
 # Companion tool configs, mirrored under ./home. State/caches stay local.
-DOTFILES=(.no-mistakes/config.yaml .config/rtk/config.toml .config/rtk/filters.toml .config/treehouse/config.toml .gemini/GEMINI.md .config/git/hooks/pre-commit .agent-browser/config.json)
+DOTFILES=(.no-mistakes/config.yaml .config/rtk/config.toml .config/rtk/filters.toml .config/treehouse/config.toml .gemini/GEMINI.md .gemini/CLAUDE_OPUS.md .config/git/hooks/pre-commit .agent-browser/config.json)
 DOTDIRS=(.gemini/references .gemini/domains .gemini/scripts)
 rm -rf "$HOME_DST"
 for rel in "${DOTFILES[@]}"; do

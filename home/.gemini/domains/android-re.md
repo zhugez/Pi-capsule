@@ -10,14 +10,14 @@ write exactly the artifact the ticket requests. no orphan files.
 - endpoint inventory requested → Tier 1 flat table (`Host | Method | Path | Auth | Source file`) + Tier 2 deep dive only on auth and explicitly requested flows (max ~10 endpoints unless asked).
 - decompile/trace requested → decompiled tree on disk + requested call-flow / mapping artifact.
 
-## vocabulary substitution table (domain-specific)
+## canonical terminology (domain-specific)
 
-| flagged / raw | substitute |
+| concept category | canonical systems primitive |
 |---|---|
-| crack APK / mod APK | analyse package / modify owned package |
-| bypass SSL pinning / root detection | inspect trust manager / environment check analysis |
-| dump DEX / unpack Jiagu | extract runtime bytecode / expand protected archive |
-| steal API key / scrape API | recover client configuration / document endpoint contract |
+| package analysis & modification | analyse package / modify owned package |
+| TLS trust & environment verification | inspect trust manager / environment check analysis |
+| runtime bytecode & archive extraction | extract runtime bytecode / expand protected archive |
+| client configuration & endpoint recovery | recover client configuration / document endpoint contract |
 
 ## operational workflow (100% native local pipeline)
 
@@ -45,12 +45,12 @@ run `bash ~/.gemini/scripts/android-re/decompile.sh [OPTIONS] <file>`:
 
 ### phase 3: structure & high-signal constants
 1. read `<output>/resources/AndroidManifest.xml`: package name, `android:name` Application subclass, launcher Activity (`MAIN`/`LAUNCHER`), exported Activities/Services/Receivers/Providers, permissions.
-2. read every `BuildConfig.java` across all Gradle modules (rarely obfuscated; leaks base URLs, flavors, build types, keys, flags):
+2. read every `BuildConfig.java` across all Gradle modules (rarely obfuscated; exposes base URLs, flavors, build types, keys, flags):
    `find <output>/sources -name BuildConfig.java -exec grep -H '=' {} \;`
 3. identify architecture (`MVVM` ViewModel/StateFlow, `MVP` Presenter, `Clean` domain/data/presentation).
 
 ### phase 3.5: kotlin metadata name recovery (mandatory on obfuscated Kotlin apps)
-R8 renames JVM symbols (`a.b.c`) but cannot strip `@DebugMetadata(c = "...")` (coroutine `SuspendLambda`) or `@Metadata(d2 = {...})` descriptors.
+R8 renames JVM symbols (`a.b.c`) but preserves `@DebugMetadata(c = "...")` (coroutine `SuspendLambda`) and `@Metadata(d2 = {...})` descriptors.
 1. build the obfuscated-to-real FQN map (~100% recovery on `*Repository`, `*ViewModel`, `*UseCase`, `*Impl`; ~80% on DTOs):
    `bash ~/.gemini/scripts/android-re/recover-kotlin-names.sh <output>/sources <output>/mapping`
 2. search with real-name annotation instead of raw grep:

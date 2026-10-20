@@ -77,8 +77,8 @@ foreach ($d in 'skills','prompts','extensions') {
 
 # Companion tool configs, mirrored under .\home. State/caches stay local.
 $DotFiles = '.no-mistakes/config.yaml','.config/rtk/config.toml','.config/rtk/filters.toml',
-            '.config/treehouse/config.toml','.gemini/GEMINI.md','.config/git/hooks/pre-commit',
-            '.agent-browser/config.json'
+            '.config/treehouse/config.toml','.gemini/GEMINI.md','.gemini/CLAUDE_OPUS.md',
+            '.config/git/hooks/pre-commit','.agent-browser/config.json'
 $DotDirs  = '.gemini/references','.gemini/domains','.gemini/scripts'
 if (Test-Path $HomeDst) { Remove-Item $HomeDst -Recurse -Force }
 foreach ($rel in $DotFiles) {
