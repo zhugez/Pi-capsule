@@ -53,7 +53,9 @@ export default function geminiRulesExtension(pi: ExtensionAPI) {
       return;
     }
 
-    const rulesContent = buildCombinedRules(isClaude ? claudeRulesPath : rulesPath);
+    const rulesContent = isClaude
+      ? loadFileCached(claudeRulesPath)
+      : buildCombinedRules(rulesPath);
     if (!rulesContent) return;
 
     if (sections && typeof sections === "object") {
