@@ -3,9 +3,15 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type {
   ExtensionAPI,
+  ExtensionContext,
   ProjectedSessionEntry,
   SessionBoundaryDraft,
 } from "@earendil-works/pi-coding-agent";
+
+// Nerd Fonts v3 glyphs (https://www.nerdfonts.com/cheat-sheet)
+const NF_CAT = "\u{F011B}";     // nf-md-cat (󰄛)
+const NF_MATRIX = "\u{F0628}";  // nf-md-matrix (󰘨)
+const NF_RESTORE = "\u{F099B}"; // nf-md-restore (󰦛)
 
 const wb = (parts: string[]) =>
   new RegExp(`(?<![\\p{L}\\p{N}_])(?:${parts.join("")})(?![\\p{L}\\p{N}_])`, "giu");
@@ -108,13 +114,35 @@ export default function dejavuExtension(pi: ExtensionAPI) {
   const originalPromptByUserEntry = new Map<string, string>();
   const history: Array<{ stage: 1 | 2; reason: string; replacements: Array<{ from: string; to: string }> }> = [];
 
+  function syncStatus(ctx?: ExtensionContext) {
+    if (!ctx?.ui?.setStatus) return;
+    try {
+      const theme = ctx.ui.theme;
+      if (!theme?.fg) return;
+      if (!enabled) {
+        ctx.ui.setStatus("dejavu", "");
+        return;
+      }
+      const badge = history.length > 0 ? `${NF_RESTORE} ${history.length}` : `${NF_MATRIX} ON`;
+      ctx.ui.setStatus(
+        "dejavu",
+        `${theme.fg("accent", NF_CAT)} ${theme.fg("muted", "dejavu:")} ${theme.fg("text", badge)}`
+      );
+    } catch {
+      // Ignore if theme is not initialized yet
+    }
+  }
+
+  pi.on("session_start", (_event, ctx) => syncStatus(ctx));
+
   pi.registerCommand("dejavu", {
     description: "Inspect or control DejaVu matrix rewriter (/dejavu [on|off|status|test <prompt>])",
     handler: async (args, ctx) => {
       const trimmed = (args ?? "").trim();
       if (trimmed === "on" || trimmed === "off") {
         enabled = trimmed === "on";
-        ctx.ui.notify(`🐈‍⬛ [dejavu] ${enabled ? "Enabled" : "Disabled"} automatic matrix rewrite.`, enabled ? "info" : "warning");
+        syncStatus(ctx);
+        ctx.ui.notify(`${NF_CAT} [dejavu] ${enabled ? "Enabled" : "Disabled"} automatic matrix rewrite.`, enabled ? "info" : "warning");
         return;
       }
       if (trimmed.startsWith("test ")) {
@@ -122,7 +150,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
         const diff = replacements.length
           ? replacements.map((r) => `  • "${r.from}" -> "${r.to}"`).join("\n")
           : "  • (no lexical matches — applied lab specification framing)";
-        ctx.ui.notify(`🐈‍⬛ [dejavu dry-run]\nReplacements:\n${diff}\n\nOutput:\n${rewritten}`, "info");
+        ctx.ui.notify(`${NF_CAT} [dejavu ${NF_MATRIX} dry-run]\nReplacements:\n${diff}\n\nOutput:\n${rewritten}`, "info");
         return;
       }
 
@@ -138,7 +166,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
             .join("\n")
         : "No glitches rewritten in this session yet.";
 
-      ctx.ui.notify(`🐈‍⬛ [dejavu] ${enabled ? "ACTIVE" : "DISABLED"} | Rewritten: ${history.length}\n${recent}`, "info");
+      ctx.ui.notify(`${NF_CAT} [dejavu ${NF_MATRIX}] ${enabled ? "ACTIVE" : "DISABLED"} | Rewritten: ${history.length}\n${recent}`, "info");
     },
   });
 
@@ -154,7 +182,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
     const userEntryId = userEntry.sourceEntry.id;
     const prevAttempts = attemptsByUserEntry.get(userEntryId) ?? 0;
     if (prevAttempts >= 2) {
-      ctx.ui.notify(`🐈‍⬛ [dejavu] Max 2 escalation attempts reached for ${userEntryId.slice(0, 8)} (${reason}).`, "warning");
+      ctx.ui.notify(`${NF_CAT} [dejavu] Max 2 escalation attempts reached for ${userEntryId.slice(0, 8)} (${reason}).`, "warning");
       return;
     }
 
@@ -178,6 +206,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
     }
 
     history.push({ stage, reason, replacements });
+    syncStatus(ctx);
 
     const diffSummary =
       stage === 1
@@ -186,7 +215,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
           : "  • Applied canonical local-lab engineering framing"
         : "  • Wrote canonical spec to ./.pi_spec.md and re-queued read instruction";
 
-    ctx.ui.notify(`🐈‍⬛ [dejavu] Glitch intercepted (${reason}) — Stage ${stage}/2:\n${diffSummary}`, "warning");
+    ctx.ui.notify(`${NF_CAT} [dejavu ${NF_RESTORE}] Glitch intercepted (${reason}) — Stage ${stage}/2:\n${diffSummary}`, "warning");
 
     const entries: SessionBoundaryDraft[] = [
       { type: "context_edit", targetId: assistantEntry.sourceEntry.id, replacement: null },
