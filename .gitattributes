@@ -1,0 +1,4 @@
+# Keep shell scripts and git hooks LF on Windows checkouts (sh breaks on CRLF).
+*.sh text eol=lf
+home/.config/git/hooks/* text eol=lf
+*.ps1 text eol=crlf

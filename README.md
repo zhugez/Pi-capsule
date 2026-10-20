@@ -74,6 +74,20 @@ Bypass the gate for one push with `git push origin <branch>`.
 
 Requires `bash`, `jq`, `git` and `curl`. Set `PI_AGENT_DIR` to target a directory other than `~/.pi/agent`.
 
+## Windows (PowerShell)
+
+Same flow, native scripts — no bash/jq needed (requires Git for Windows; Node.js LTS for `pi` / `agent-browser`):
+
+```powershell
+git clone https://github.com/zhugez/pi-capsule; cd pi-capsule
+powershell -ExecutionPolicy Bypass -File .\scripts\restore.ps1   # installs CLIs to ~\.local\bin, prints env vars
+[Environment]::SetEnvironmentVariable('MACMINI_CODEX_API_KEY', '...', 'User')
+# open a new terminal, then: pi
+```
+
+Backup from a Windows machine: `powershell -ExecutionPolicy Bypass -File .\scripts\export.ps1`.
+Shared skills are linked with junctions (no admin rights needed).
+
 ## Security and privacy
 
 These files are **never** exported:
