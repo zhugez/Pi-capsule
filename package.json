@@ -2,6 +2,9 @@
   "name": "pi-capsule",
   "private": true,
   "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/sync-config.mjs --models"
+  },
   "pi": {
     "extensions": [
       "./agent/extensions"

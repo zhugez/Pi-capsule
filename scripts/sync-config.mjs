@@ -17,8 +17,9 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..');
 const REPO_AGENT_DIR = path.join(REPO_ROOT, 'agent');
 
-const TARGET_AGENT_DIR = process.env.PI_AGENT_DIR
-  ? path.resolve(process.env.PI_AGENT_DIR)
+const envAgentDir = process.env.PI_AGENT_DIR || process.env.PI_CODING_AGENT_DIR;
+const TARGET_AGENT_DIR = envAgentDir
+  ? path.resolve(envAgentDir)
   : path.join(os.homedir(), '.pi', 'agent');
 
 const NEVER_TOUCH = new Set([

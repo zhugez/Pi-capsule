@@ -36,10 +36,17 @@ new machine ◀──restore.sh── agent/ ◀──git clone───┘
 
 ## Update
 
-To update an existing machine without overwriting credentials or local configuration:
+To update an existing machine (extensions, skills, prompts, and merged config/models without overwriting local API keys or credentials):
 
 ```bash
 pi update --extensions
+```
+
+`pi update --extensions` pulls the latest commit into `~/.pi/agent/git/github.com/zhugez/pi-capsule` and automatically runs `node scripts/sync-config.mjs --models` via `postinstall`.
+
+To preview or run config sync manually:
+
+```bash
 node scripts/sync-config.mjs --dry-run
 node scripts/sync-config.mjs [--models]
 ```
