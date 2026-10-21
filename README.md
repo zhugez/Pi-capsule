@@ -8,7 +8,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup. One script sn
 
 - **Settings** — theme, default provider/model, thinking level, compaction overrides, package list.
 - **Providers** — custom `models.json` providers, with literal API keys swapped for `$ENV_VAR` references.
-- **Skills & extensions** — everything under `~/.pi/agent/skills` and `~/.pi/agent/extensions`, symlinks dereferenced so the repo is self-contained.
+- **Skills, extensions & prompts** — distributed as a Pi package (`git:github.com/zhugez/pi-capsule`) with skills, extensions, and prompt templates.
 - **Companion CLIs** — `restore.sh` installs each one if missing (official install script) and restores its config from `home/`:
   - [no-mistakes](https://github.com/kunchenguid/no-mistakes) — git push gate, plus a global `git gate` alias · `~/.no-mistakes/config.yaml`
   - [rtk](https://github.com/rtk-ai/rtk) — token-saving CLI proxy, hooked into Pi via `rtk init -g --agent pi` · `~/.config/rtk/*.toml`
@@ -30,9 +30,25 @@ new machine ◀──restore.sh── agent/ ◀──git clone───┘
 | --- | --- |
 | Local packages | `/home/dev/pi-pulse` becomes `git:github.com/zhugez/pi-pulse` (read from the repo's `origin`) |
 | API keys | `"apiKey": "sk-…"` becomes `"apiKey": "$MACMINI_CODEX_API_KEY"`; existing `$VAR` / `!command` values are kept |
-| Restore | files already in `~/.pi/agent` are moved to `*.bak` before being replaced |
+| Restore / Sync | config files are safely merged with atomic writes and timestamped backups (`*.bak-<timestamp>`); API keys and credentials are preserved |
 | Companion CLIs | installed only when not on `PATH`; add one by appending `<command> <install-url>` to the `TOOLS` list in `restore.sh` and its config path to `DOTFILES` in `export.sh` |
 | First launch | Pi installs any missing `npm:` / `git:` packages from `settings.json` on startup |
+
+## Update
+
+To update an existing machine without overwriting credentials or local configuration:
+
+```bash
+pi update --extensions
+node scripts/sync-config.mjs --dry-run
+node scripts/sync-config.mjs [--models]
+```
+
+### Edit workflow
+
+1. Edit inside `~/.pi/agent/git/github.com/zhugez/pi-capsule` (or your local clone).
+2. Commit and push changes to GitHub.
+3. Always commit before running `pi update --extensions`, because Pi may reset and clean the clone during package reconciliation.
 
 ## Backup
 

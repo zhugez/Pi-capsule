@@ -1,4 +1,4 @@
-# Copy .\agent into ~\.pi\agent and .\home into ~, install companion CLIs (Windows).
+# Setup a fresh machine: sync config, install companion CLIs and home dotfiles (Windows).
 # Existing files are backed up to <file>.bak first.
 # Usage:  powershell -ExecutionPolicy Bypass -File .\scripts\restore.ps1
 #Requires -Version 5.1
@@ -24,28 +24,15 @@ function Backup($path) {
   }
 }
 
-# --- agent config -----------------------------------------------------------
-Get-ChildItem -LiteralPath $Src -Force | ForEach-Object {
-  $target = Join-Path $Dst $_.Name
-  Backup $target
-  Copy-Item -LiteralPath $_.FullName -Destination $target -Recurse -Force
-}
-
-# models.json may hold provider URLs: restrict to current user (chmod 600 equivalent).
-$models = Join-Path $Dst 'models.json'
-if (Test-Path $models) { icacls $models /inheritance:r /grant:r "$($env:USERNAME):(R,W)" | Out-Null }
-
-# Deduplicate skills that also live in ~\.agents\skills: junction (no admin needed).
-$shared = Join-Path $HOME '.agents\skills'
-$skills = Join-Path $Dst 'skills'
-if ((Test-Path $shared) -and (Test-Path $skills)) {
-  Get-ChildItem -LiteralPath $skills -Directory | ForEach-Object {
-    $twin = Join-Path $shared $_.Name
-    if (Test-Path $twin) {
-      Remove-Item -LiteralPath $_.FullName -Recurse -Force
-      New-Item -ItemType Junction -Path $_.FullName -Target $twin | Out-Null
-    }
+# --- agent config & package setup -------------------------------------------
+$syncScript = Join-Path $Root 'scripts\sync-config.mjs'
+if (Has 'node') {
+  & node $syncScript --models
+  if (Has 'pi') {
+    try { & pi update --extensions } catch { Write-Warning "pi update: $_" }
   }
+} else {
+  Write-Warning 'node: Node.js not found. Install Node.js LTS (winget install OpenJS.NodeJS.LTS), then rerun.'
 }
 
 # --- companion dotfiles (mirrored from ~, see DOTFILES/DOTDIRS in export) ----

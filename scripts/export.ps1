@@ -22,8 +22,7 @@ function Copy-Deref($from, $to) {
   $global:LASTEXITCODE = 0
 }
 
-if (Test-Path $Dst) { Remove-Item $Dst -Recurse -Force }
-New-Item -ItemType Directory -Path $Dst | Out-Null
+if (-not (Test-Path $Dst)) { New-Item -ItemType Directory -Path $Dst | Out-Null }
 
 foreach ($f in 'settings.json','pi-fff.json','subscription-usage-prefs.json','mcp.json','AGENTS.md','SYSTEM.md','keybindings.json') {
   $p = Join-Path $Src $f
@@ -69,11 +68,7 @@ if (Test-Path $modelsPath) {
   Write-Json $models (Join-Path $Dst 'models.json')
 }
 
-# Skills, prompts, and loose extensions: dereference links so the repo is self-contained.
-foreach ($d in 'skills','prompts','extensions') {
-  $p = Join-Path $Src $d
-  if (Test-Path $p) { Copy-Deref $p (Join-Path $Dst $d) }
-}
+# Skills, prompts, and extensions are not copied: the repo is the source of truth.
 
 # Companion tool configs, mirrored under .\home. State/caches stay local.
 $DotFiles = '.no-mistakes/config.yaml','.config/rtk/config.toml','.config/rtk/filters.toml',

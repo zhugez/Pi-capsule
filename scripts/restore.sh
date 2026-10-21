@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copy ./agent into ~/.pi/agent and ./home into ~, install CLI tools.
+# Setup a fresh machine: sync config, install companion CLIs and home dotfiles.
 # Existing files are backed up to <file>.bak first.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -7,22 +7,10 @@ SRC="$ROOT/agent"
 DST="${PI_AGENT_DIR:-$HOME/.pi/agent}"
 mkdir -p "$DST"
 
-for f in "$SRC"/*; do
-  name="$(basename "$f")"
-  [ -e "$DST/$name" ] && { rm -rf "$DST/$name.bak"; mv "$DST/$name" "$DST/$name.bak"; }
-  cp -r "$f" "$DST/$name"
-done
-chmod 600 "$DST/models.json" 2>/dev/null || true
-
-# Deduplicate skills if ~/.agents/skills exists: symlink so Pi canonicalizes without collision warnings.
-if [ -d "$HOME/.agents/skills" ] && [ -d "$DST/skills" ]; then
-  for s in "$DST/skills"/*; do
-    name="$(basename "$s")"
-    if [ -d "$HOME/.agents/skills/$name" ]; then
-      rm -rf "$s"
-      ln -s "../../../.agents/skills/$name" "$s"
-    fi
-  done
+# Safe config sync and package setup
+node "$ROOT/scripts/sync-config.mjs" --models
+if command -v pi >/dev/null; then
+  pi update --extensions
 fi
 
 # Dotfiles of companion tools, mirrored from ~ (see DOTFILES/DOTDIRS in export.sh).

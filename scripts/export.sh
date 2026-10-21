@@ -6,7 +6,7 @@ SRC="${PI_AGENT_DIR:-$HOME/.pi/agent}"
 DST="$ROOT/agent"
 HOME_DST="$ROOT/home"
 
-rm -rf "$DST" && mkdir -p "$DST"
+mkdir -p "$DST"
 
 for f in settings.json pi-fff.json subscription-usage-prefs.json mcp.json AGENTS.md SYSTEM.md keybindings.json; do
   [ -f "$SRC/$f" ] && cp "$SRC/$f" "$DST/$f"
@@ -40,10 +40,7 @@ if [ -f "$SRC/models.json" ]; then
     "$SRC/models.json" > "$DST/models.json"
 fi
 
-# Skills, prompts, and loose extensions: dereference symlinks so the repo is self-contained.
-for d in skills prompts extensions; do
-  [ -d "$SRC/$d" ] && cp -rL "$SRC/$d" "$DST/$d"
-done
+# Skills, prompts, and extensions are not copied: the repo is the source of truth.
 
 # Companion tool configs, mirrored under ./home. State/caches stay local.
 DOTFILES=(.no-mistakes/config.yaml .config/rtk/config.toml .config/rtk/filters.toml .config/treehouse/config.toml .gemini/GEMINI.md .gemini/CLAUDE_OPUS.md .config/git/hooks/pre-commit .agent-browser/config.json)
