@@ -15,6 +15,32 @@ const NF_SHIELD = "\u{f0565}";    // nf-md-shield_check (󰕥)
 const NF_RESTORE = "\u{f099b}";   // nf-md-restore (󰦛)
 const NF_AUTO_FIX = "\u{f0068}";  // nf-md-auto_fix (󰁨)
 
+// Catppuccin Mocha palette (https://catppuccin.com/palette/)
+const CTP = {
+  rosewater: "245;224;220", // #f5e0dc
+  flamingo:  "242;205;205", // #f2cdcd
+  pink:      "245;194;231", // #f5c2e7
+  mauve:     "203;166;247", // #cba6f7
+  red:       "243;139;168", // #f38ba8
+  maroon:    "235;160;172", // #eba0ac
+  peach:     "250;179;135", // #fab387
+  yellow:    "249;226;175", // #f9e2af
+  green:     "166;227;161", // #a6e3a1
+  teal:      "148;226;213", // #94e2d5
+  sky:       "137;220;235", // #89dceb
+  sapphire:  "116;199;236", // #74c7ec
+  blue:      "137;180;250", // #89b4fa
+  lavender:  "180;190;254", // #b4befe
+  text:      "205;214;244", // #cdd6f4
+  subtext0:  "166;173;200", // #a6adc8
+  overlay1:  "127;132;156", // #7f849c
+  surface2:  "88;91;112",   // #585b70
+} as const;
+
+type CtpColor = keyof typeof CTP;
+
+const ctp = (color: CtpColor, text: string) => `\x1b[22;38;2;${CTP[color]}m${text}\x1b[39m`;
+
 const wb = (parts: string[]) =>
   new RegExp(`(?<![\\p{L}\\p{N}_])(?:${parts.join("")})(?![\\p{L}\\p{N}_])`, "giu");
 
@@ -110,16 +136,6 @@ function findTrailingTurn(entries: ProjectedSessionEntry[]) {
   return {};
 }
 
-function paint(ctx: ExtensionContext | undefined, color: string, text: string): string {
-  try {
-    const fg = ctx?.ui?.theme?.fg?.bind(ctx.ui.theme) as ((c: string, t: string) => string) | undefined;
-    if (!fg || fg("accent", "x") === "x") return text;
-    return `\x1b[22m${fg(color, text)}`;
-  } catch {
-    return text;
-  }
-}
-
 export default function dejavuExtension(pi: ExtensionAPI) {
   let enabled = true;
   let isStreaming = false;
@@ -130,22 +146,20 @@ export default function dejavuExtension(pi: ExtensionAPI) {
   function syncStatus(ctx?: ExtensionContext) {
     if (!ctx?.ui?.setStatus) return;
     try {
-      const theme = ctx.ui.theme;
-      if (!theme?.fg) return;
       if (!enabled) {
         ctx.ui.setStatus("dejavu", "");
         return;
       }
-      const indicator = isStreaming ? theme.fg("accent", "●") : theme.fg("dim", "○");
-      const icon = theme.fg("accent", NF_CAT);
-      const label = theme.fg("muted", "dejavu: ");
+      const indicator = isStreaming ? ctp("mauve", "●") : ctp("overlay1", "○");
+      const icon = ctp("mauve", NF_CAT);
+      const label = ctp("subtext0", "dejavu: ");
       const badge =
         history.length > 0
-          ? theme.fg("warning", `${NF_RESTORE} ${history.length}`)
-          : theme.fg("success", `${NF_MATRIX} ON`);
+          ? ctp("peach", `${NF_RESTORE} ${history.length}`)
+          : ctp("green", `${NF_MATRIX} ON`);
       ctx.ui.setStatus("dejavu", `${indicator} ${icon} ${label}${badge}`);
     } catch {
-      // Ignore if theme is not initialized yet
+      // Ignore if UI is not ready
     }
   }
 
@@ -167,10 +181,10 @@ export default function dejavuExtension(pi: ExtensionAPI) {
         enabled = trimmed === "on";
         syncStatus(ctx);
         const stateBadge = enabled
-          ? paint(ctx, "success", `${NF_SHIELD} ENABLED`)
-          : paint(ctx, "warning", "○ DISABLED");
+          ? ctp("green", `${NF_SHIELD} ENABLED`)
+          : ctp("peach", "○ DISABLED");
         ctx.ui.notify(
-          `${paint(ctx, "accent", `${NF_CAT} [dejavu ${NF_MATRIX}]`)} Matrix rewriter ${stateBadge}`,
+          `${ctp("mauve", `${NF_CAT} [dejavu ${NF_MATRIX}]`)} ${ctp("text", "Matrix rewriter")} ${stateBadge}`,
           enabled ? "info" : "warning"
         );
         return;
@@ -181,37 +195,37 @@ export default function dejavuExtension(pi: ExtensionAPI) {
           ? replacements
               .map(
                 (r) =>
-                  `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`
+                  `  ${ctp("mauve", NF_AUTO_FIX)} ${ctp("red", `"${r.from}"`)} ${ctp("overlay1", "→")} ${ctp("green", `"${r.to}"`)}`
               )
               .join("\n")
-          : `  ${paint(ctx, "muted", "• (no lexical matches — applied lab specification framing)")}`;
+          : `  ${ctp("subtext0", "• (no lexical matches — applied lab specification framing)")}`;
         ctx.ui.notify(
-          `${paint(ctx, "accent", `${NF_CAT} [dejavu ${NF_MATRIX} dry-run]`)}\n${paint(ctx, "syntaxKeyword", "Replacements:")}\n${diff}\n\n${paint(ctx, "syntaxFunction", "Output:")}\n${paint(ctx, "text", rewritten)}`,
+          `${ctp("mauve", `${NF_CAT} [dejavu ${NF_MATRIX} dry-run]`)}\n${ctp("pink", "Replacements:")}\n${diff}\n\n${ctp("sapphire", "Output:")}\n${ctp("text", rewritten)}`,
           "info"
         );
         return;
       }
 
       const statusBadge = enabled
-        ? paint(ctx, "success", `${NF_SHIELD} ACTIVE`)
-        : paint(ctx, "error", "○ DISABLED");
-      const countBadge = paint(ctx, history.length > 0 ? "warning" : "accent", `${NF_RESTORE} ${history.length}`);
+        ? ctp("green", `${NF_SHIELD} ACTIVE`)
+        : ctp("red", "○ DISABLED");
+      const countBadge = ctp(history.length > 0 ? "peach" : "teal", `${NF_RESTORE} ${history.length}`);
       const recent = history.length
         ? history
             .slice(-5)
             .map((h, i) => {
               const diffs = h.replacements.length
                 ? h.replacements
-                    .map((r) => `${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`)
+                    .map((r) => `${ctp("red", `"${r.from}"`)} ${ctp("overlay1", "→")} ${ctp("green", `"${r.to}"`)}`)
                     .join(", ")
-                : paint(ctx, "syntaxType", "indirect file routing (.pi_spec.md)");
-              return `  ${paint(ctx, "accent", `${i + 1}.`)} ${paint(ctx, "warning", `[Stage ${h.stage}]`)} ${paint(ctx, "muted", `(${h.reason})`)} ${diffs}`;
+                : ctp("lavender", "indirect file routing (.pi_spec.md)");
+              return `  ${ctp("mauve", `${i + 1}.`)} ${ctp("yellow", `[Stage ${h.stage}]`)} ${ctp("subtext0", `(${h.reason})`)} ${diffs}`;
             })
             .join("\n")
-        : `  ${paint(ctx, "muted", "• No glitches rewritten in this session yet.")}`;
+        : `  ${ctp("subtext0", "• No glitches rewritten in this session yet.")}`;
 
       ctx.ui.notify(
-        `${paint(ctx, "accent", `${NF_CAT} [dejavu ${NF_MATRIX}]`)} ${statusBadge} ${paint(ctx, "muted", "│")} ${paint(ctx, "syntaxFunction", "Rewritten:")} ${countBadge}\n${recent}`,
+        `${ctp("mauve", `${NF_CAT} [dejavu ${NF_MATRIX}]`)} ${statusBadge} ${ctp("overlay1", "│")} ${ctp("sapphire", "Rewritten:")} ${countBadge}\n${recent}`,
         "info"
       );
     },
@@ -230,7 +244,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
     const prevAttempts = attemptsByUserEntry.get(userEntryId) ?? 0;
     if (prevAttempts >= 2) {
       ctx.ui.notify(
-        `${paint(ctx, "error", `${NF_CAT} [dejavu]`)} Max 2 escalation attempts reached for ${paint(ctx, "warning", userEntryId.slice(0, 8))} (${paint(ctx, "muted", reason)}).`,
+        `${ctp("red", `${NF_CAT} [dejavu]`)} ${ctp("text", "Max 2 escalation attempts reached for")} ${ctp("peach", userEntryId.slice(0, 8))} ${ctp("subtext0", `(${reason})`)}.`,
         "warning"
       );
       return;
@@ -264,14 +278,14 @@ export default function dejavuExtension(pi: ExtensionAPI) {
           ? replacements
               .map(
                 (r) =>
-                  `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`
+                  `  ${ctp("mauve", NF_AUTO_FIX)} ${ctp("red", `"${r.from}"`)} ${ctp("overlay1", "→")} ${ctp("green", `"${r.to}"`)}`
               )
               .join("\n")
-          : `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "success", "Applied canonical local-lab engineering framing")}`
-        : `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "syntaxType", "Wrote canonical spec to ./.pi_spec.md and re-queued read instruction")}`;
+          : `  ${ctp("mauve", NF_AUTO_FIX)} ${ctp("green", "Applied canonical local-lab engineering framing")}`
+        : `  ${ctp("mauve", NF_AUTO_FIX)} ${ctp("lavender", "Wrote canonical spec to ./.pi_spec.md and re-queued read instruction")}`;
 
     ctx.ui.notify(
-      `${paint(ctx, "warning", `${NF_CAT} [dejavu ${NF_RESTORE}]`)} ${paint(ctx, "error", `Glitch intercepted (${reason})`)} ${paint(ctx, "muted", "—")} ${paint(ctx, "accent", `Stage ${stage}/2`)}:\n${diffSummary}`,
+      `${ctp("peach", `${NF_CAT} [dejavu ${NF_RESTORE}]`)} ${ctp("red", `Glitch intercepted (${reason})`)} ${ctp("overlay1", "—")} ${ctp("yellow", `Stage ${stage}/2`)}:\n${diffSummary}`,
       "warning"
     );
 
