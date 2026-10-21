@@ -1,3 +1,4 @@
 {
-  "enableHomeDirScanning": false
+  "enableHomeDirScanning": true,
+  "warnOnHomeDirScan": false
 }
