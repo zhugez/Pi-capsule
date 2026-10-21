@@ -7,3 +7,7 @@ antigravity-accounts.json
 *.lock
 .agent-browser/states/
 .agent-browser/screenshots/
+
+# npm install artefacts (Pi runs npm install in the package clone)
+package-lock.json
+node_modules/

@@ -161,6 +161,16 @@ function mergePackages(localPackages = [], repoPackages = []) {
   return result;
 }
 
+// Per-machine preferences: keep the local value when present so a package
+// update (postinstall) never reverts a machine's own choice.
+const LOCAL_PREFERENCE_KEYS = [
+  'lastChangelogVersion',
+  'defaultProvider',
+  'defaultModel',
+  'defaultThinkingLevel',
+  'theme',
+];
+
 function mergeSettings(local = {}, repo = {}) {
   const merged = deepMerge(local, repo);
 
@@ -169,9 +179,8 @@ function mergeSettings(local = {}, repo = {}) {
   const repoPackages = Array.isArray(repo.packages) ? repo.packages : [];
   merged.packages = mergePackages(localPackages, repoPackages);
 
-  // lastChangelogVersion exception: keep local if present
-  if (local.lastChangelogVersion !== undefined) {
-    merged.lastChangelogVersion = local.lastChangelogVersion;
+  for (const key of LOCAL_PREFERENCE_KEYS) {
+    if (local[key] !== undefined) merged[key] = local[key];
   }
 
   return merged;
@@ -463,18 +472,27 @@ function main() {
 
   // If invoked via `pi install git:github.com/zhugez/pi-capsule` for the first time,
   // `pi install` flushes its in-memory settings right after `npm install` finishes.
-  // Spawn a brief delayed pass to restore the merged settings & skill filters.
+  // Re-run the (idempotent) sync a few times so a slow machine still ends up merged.
   if (
     !isDryRun &&
     !hadCapsuleBefore &&
     process.env.npm_lifecycle_event === 'postinstall' &&
     !process.env.PI_CAPSULE_DELAYED_SYNC
   ) {
+    const delays = [1500, 4000, 10000, 20000];
     const child = spawn(
       process.execPath,
       [
         '-e',
-        `setTimeout(() => { require('node:child_process').spawnSync(${JSON.stringify(process.execPath)}, [${JSON.stringify(__filename)}, '--models'], { stdio: 'ignore', env: { ...process.env, PI_CAPSULE_DELAYED_SYNC: '1' } }); }, 1200);`,
+        `const { spawnSync } = require('node:child_process');
+for (const d of ${JSON.stringify(delays)}) {
+  setTimeout(() => {
+    spawnSync(${JSON.stringify(process.execPath)}, [${JSON.stringify(__filename)}, '--models'], {
+      stdio: 'ignore',
+      env: { ...process.env, PI_CAPSULE_DELAYED_SYNC: '1' },
+    });
+  }, d);
+}`,
       ],
       { detached: true, stdio: 'ignore' }
     );
