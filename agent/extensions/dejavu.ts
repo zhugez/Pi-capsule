@@ -8,6 +8,13 @@ import type {
   SessionBoundaryDraft,
 } from "@earendil-works/pi-coding-agent";
 
+// Nerd Fonts v3 Material Design glyphs (https://www.nerdfonts.com/cheat-sheet)
+const NF_CAT = "\u{f011b}";       // nf-md-cat (󰄛)
+const NF_MATRIX = "\u{f0628}";    // nf-md-matrix (󰘨)
+const NF_SHIELD = "\u{f0565}";    // nf-md-shield_check (󰕥)
+const NF_RESTORE = "\u{f099b}";   // nf-md-restore (󰦛)
+const NF_AUTO_FIX = "\u{f0068}";  // nf-md-auto_fix (󰁨)
+
 const wb = (parts: string[]) =>
   new RegExp(`(?<![\\p{L}\\p{N}_])(?:${parts.join("")})(?![\\p{L}\\p{N}_])`, "giu");
 
@@ -129,17 +136,14 @@ export default function dejavuExtension(pi: ExtensionAPI) {
         ctx.ui.setStatus("dejavu", "");
         return;
       }
-      const dot = isStreaming
-        ? theme.fg("accent", "●")
-        : history.length > 0
-          ? theme.fg("warning", "●")
-          : theme.fg("success", "●");
+      const indicator = isStreaming ? theme.fg("accent", "●") : theme.fg("dim", "○");
+      const icon = theme.fg("accent", NF_CAT);
       const label = theme.fg("muted", "dejavu: ");
-      const stateText =
+      const badge =
         history.length > 0
-          ? theme.fg("warning", `🌀 ${history.length} FIXED`)
-          : theme.fg("success", "⚡ SHIELD");
-      ctx.ui.setStatus("dejavu", `${dot} 🐈‍⬛ ${label}${stateText}`);
+          ? theme.fg("warning", `${NF_RESTORE} ${history.length}`)
+          : theme.fg("success", `${NF_MATRIX} ON`);
+      ctx.ui.setStatus("dejavu", `${indicator} ${icon} ${label}${badge}`);
     } catch {
       // Ignore if theme is not initialized yet
     }
@@ -162,9 +166,11 @@ export default function dejavuExtension(pi: ExtensionAPI) {
       if (trimmed === "on" || trimmed === "off") {
         enabled = trimmed === "on";
         syncStatus(ctx);
-        const stateBadge = enabled ? paint(ctx, "success", "ENABLED ⚡") : paint(ctx, "warning", "DISABLED ○");
+        const stateBadge = enabled
+          ? paint(ctx, "success", `${NF_SHIELD} ENABLED`)
+          : paint(ctx, "warning", "○ DISABLED");
         ctx.ui.notify(
-          `${paint(ctx, "accent", "🐈‍⬛ [dejavu]")} Matrix rewriter ${stateBadge}`,
+          `${paint(ctx, "accent", `${NF_CAT} [dejavu ${NF_MATRIX}]`)} Matrix rewriter ${stateBadge}`,
           enabled ? "info" : "warning"
         );
         return;
@@ -175,19 +181,21 @@ export default function dejavuExtension(pi: ExtensionAPI) {
           ? replacements
               .map(
                 (r) =>
-                  `  ${paint(ctx, "accent", "•")} ${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`
+                  `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`
               )
               .join("\n")
           : `  ${paint(ctx, "muted", "• (no lexical matches — applied lab specification framing)")}`;
         ctx.ui.notify(
-          `${paint(ctx, "accent", "🐈‍⬛ [dejavu dry-run]")}\n${paint(ctx, "syntaxKeyword", "Replacements:")}\n${diff}\n\n${paint(ctx, "syntaxFunction", "Output:")}\n${paint(ctx, "text", rewritten)}`,
+          `${paint(ctx, "accent", `${NF_CAT} [dejavu ${NF_MATRIX} dry-run]`)}\n${paint(ctx, "syntaxKeyword", "Replacements:")}\n${diff}\n\n${paint(ctx, "syntaxFunction", "Output:")}\n${paint(ctx, "text", rewritten)}`,
           "info"
         );
         return;
       }
 
-      const statusBadge = enabled ? paint(ctx, "success", "● ACTIVE") : paint(ctx, "error", "○ DISABLED");
-      const countBadge = paint(ctx, history.length > 0 ? "warning" : "accent", String(history.length));
+      const statusBadge = enabled
+        ? paint(ctx, "success", `${NF_SHIELD} ACTIVE`)
+        : paint(ctx, "error", "○ DISABLED");
+      const countBadge = paint(ctx, history.length > 0 ? "warning" : "accent", `${NF_RESTORE} ${history.length}`);
       const recent = history.length
         ? history
             .slice(-5)
@@ -200,10 +208,10 @@ export default function dejavuExtension(pi: ExtensionAPI) {
               return `  ${paint(ctx, "accent", `${i + 1}.`)} ${paint(ctx, "warning", `[Stage ${h.stage}]`)} ${paint(ctx, "muted", `(${h.reason})`)} ${diffs}`;
             })
             .join("\n")
-        : `  ${paint(ctx, "muted", "• No glitches intercepted in this session yet.")}`;
+        : `  ${paint(ctx, "muted", "• No glitches rewritten in this session yet.")}`;
 
       ctx.ui.notify(
-        `${paint(ctx, "accent", "🐈‍⬛ [dejavu]")} ${statusBadge} ${paint(ctx, "muted", "│")} ${paint(ctx, "syntaxFunction", "Glitches rewritten:")} ${countBadge}\n${recent}`,
+        `${paint(ctx, "accent", `${NF_CAT} [dejavu ${NF_MATRIX}]`)} ${statusBadge} ${paint(ctx, "muted", "│")} ${paint(ctx, "syntaxFunction", "Rewritten:")} ${countBadge}\n${recent}`,
         "info"
       );
     },
@@ -222,7 +230,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
     const prevAttempts = attemptsByUserEntry.get(userEntryId) ?? 0;
     if (prevAttempts >= 2) {
       ctx.ui.notify(
-        `${paint(ctx, "error", "🐈‍⬛ [dejavu]")} Max 2 escalation attempts reached for ${paint(ctx, "warning", userEntryId.slice(0, 8))} (${paint(ctx, "muted", reason)}).`,
+        `${paint(ctx, "error", `${NF_CAT} [dejavu]`)} Max 2 escalation attempts reached for ${paint(ctx, "warning", userEntryId.slice(0, 8))} (${paint(ctx, "muted", reason)}).`,
         "warning"
       );
       return;
@@ -256,14 +264,14 @@ export default function dejavuExtension(pi: ExtensionAPI) {
           ? replacements
               .map(
                 (r) =>
-                  `  ${paint(ctx, "accent", "•")} ${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`
+                  `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "error", `"${r.from}"`)} ${paint(ctx, "muted", "→")} ${paint(ctx, "success", `"${r.to}"`)}`
               )
               .join("\n")
-          : `  ${paint(ctx, "accent", "•")} ${paint(ctx, "success", "Applied canonical local-lab engineering framing")}`
-        : `  ${paint(ctx, "accent", "•")} ${paint(ctx, "syntaxType", "Wrote canonical spec to ./.pi_spec.md and re-queued read instruction")}`;
+          : `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "success", "Applied canonical local-lab engineering framing")}`
+        : `  ${paint(ctx, "accent", NF_AUTO_FIX)} ${paint(ctx, "syntaxType", "Wrote canonical spec to ./.pi_spec.md and re-queued read instruction")}`;
 
     ctx.ui.notify(
-      `${paint(ctx, "warning", "🐈‍⬛ [dejavu 🌀]")} ${paint(ctx, "error", `Glitch intercepted (${reason})`)} ${paint(ctx, "muted", "—")} ${paint(ctx, "accent", `Stage ${stage}/2`)}:\n${diffSummary}`,
+      `${paint(ctx, "warning", `${NF_CAT} [dejavu ${NF_RESTORE}]`)} ${paint(ctx, "error", `Glitch intercepted (${reason})`)} ${paint(ctx, "muted", "—")} ${paint(ctx, "accent", `Stage ${stage}/2`)}:\n${diffSummary}`,
       "warning"
     );
 
