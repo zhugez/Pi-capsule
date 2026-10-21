@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -320,6 +321,85 @@ function writeAtomicWithBackup(targetPath, newContent, mode = null) {
   }
 }
 
+function migrateDuplicateResources(summary) {
+  const dateStamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const migratedRoot = path.join(TARGET_AGENT_DIR, `migrated-${dateStamp}`);
+  const movedItems = [];
+
+  // 1. Duplicate extensions in ~/.pi/agent/extensions/<file>.ts
+  const repoExtDir = path.join(REPO_AGENT_DIR, 'extensions');
+  const localExtDir = path.join(TARGET_AGENT_DIR, 'extensions');
+  if (fs.existsSync(repoExtDir) && fs.existsSync(localExtDir)) {
+    const repoExts = new Set(
+      fs.readdirSync(repoExtDir, { withFileTypes: true })
+        .filter((d) => d.isFile() && d.name.endsWith('.ts'))
+        .map((d) => d.name)
+    );
+    for (const entry of fs.readdirSync(localExtDir, { withFileTypes: true })) {
+      if ((entry.isFile() || entry.isSymbolicLink()) && repoExts.has(entry.name)) {
+        const srcPath = path.join(localExtDir, entry.name);
+        const destDir = path.join(migratedRoot, 'extensions');
+        const destPath = path.join(destDir, entry.name);
+        if (!isDryRun) {
+          fs.mkdirSync(destDir, { recursive: true });
+          fs.renameSync(srcPath, destPath);
+        }
+        movedItems.push(`extensions/${entry.name}`);
+      }
+    }
+  }
+
+  // 2. Duplicate prompts in ~/.pi/agent/prompts/<file>.md
+  const repoPromptsDir = path.join(REPO_AGENT_DIR, 'prompts');
+  const localPromptsDir = path.join(TARGET_AGENT_DIR, 'prompts');
+  if (fs.existsSync(repoPromptsDir) && fs.existsSync(localPromptsDir)) {
+    const repoPrompts = new Set(
+      fs.readdirSync(repoPromptsDir, { withFileTypes: true })
+        .filter((d) => d.isFile() && d.name.endsWith('.md'))
+        .map((d) => d.name)
+    );
+    for (const entry of fs.readdirSync(localPromptsDir, { withFileTypes: true })) {
+      if ((entry.isFile() || entry.isSymbolicLink()) && repoPrompts.has(entry.name)) {
+        const srcPath = path.join(localPromptsDir, entry.name);
+        const destDir = path.join(migratedRoot, 'prompts');
+        const destPath = path.join(destDir, entry.name);
+        if (!isDryRun) {
+          fs.mkdirSync(destDir, { recursive: true });
+          fs.renameSync(srcPath, destPath);
+        }
+        movedItems.push(`prompts/${entry.name}`);
+      }
+    }
+  }
+
+  // 3. Duplicate non-symlink skill directories in ~/.pi/agent/skills/<name>
+  const repoSkillsDir = path.join(REPO_AGENT_DIR, 'skills');
+  const localSkillsDir = path.join(TARGET_AGENT_DIR, 'skills');
+  if (fs.existsSync(repoSkillsDir) && fs.existsSync(localSkillsDir)) {
+    const repoSkills = new Set(
+      fs.readdirSync(repoSkillsDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name)
+    );
+    for (const entry of fs.readdirSync(localSkillsDir, { withFileTypes: true })) {
+      if (entry.isDirectory() && !entry.isSymbolicLink() && repoSkills.has(entry.name)) {
+        const srcPath = path.join(localSkillsDir, entry.name);
+        const destDir = path.join(migratedRoot, 'skills');
+        const destPath = path.join(destDir, entry.name);
+        if (!isDryRun) {
+          fs.mkdirSync(destDir, { recursive: true });
+          fs.renameSync(srcPath, destPath);
+        }
+        movedItems.push(`skills/${entry.name}`);
+      }
+    }
+  }
+
+  if (movedItems.length > 0) {
+    summary.changed.push(`migrated duplicates (${movedItems.length}) -> migrated-${dateStamp}/`);
+  }
+}
+
 function main() {
   const summary = {
     changed: [],
@@ -339,6 +419,7 @@ function main() {
   const settingsRepoPath = path.join(REPO_AGENT_DIR, 'settings.json');
   assertSafePath(settingsTargetPath);
 
+  let hadCapsuleBefore = true;
   if (fs.existsSync(settingsRepoPath)) {
     let localSettings = {};
     let localExists = false;
@@ -354,6 +435,10 @@ function main() {
         localSettings = {};
       }
     }
+
+    const capsuleNormalized = normalizePackageSource('git:github.com/zhugez/pi-capsule');
+    const localPkgs = Array.isArray(localSettings.packages) ? localSettings.packages : [];
+    hadCapsuleBefore = localPkgs.some((p) => normalizePackageSource(p) === capsuleNormalized);
 
     const repoSettings = JSON.parse(fs.readFileSync(settingsRepoPath, 'utf8'));
     const mergedSettings = mergeSettings(localSettings, repoSettings);
@@ -371,6 +456,29 @@ function main() {
         summary.changed.push('settings.json');
       }
     }
+  }
+
+  // Migrate any duplicate top-level extensions/prompts/non-symlink skills
+  migrateDuplicateResources(summary);
+
+  // If invoked via `pi install git:github.com/zhugez/pi-capsule` for the first time,
+  // `pi install` flushes its in-memory settings right after `npm install` finishes.
+  // Spawn a brief delayed pass to restore the merged settings & skill filters.
+  if (
+    !isDryRun &&
+    !hadCapsuleBefore &&
+    process.env.npm_lifecycle_event === 'postinstall' &&
+    !process.env.PI_CAPSULE_DELAYED_SYNC
+  ) {
+    const child = spawn(
+      process.execPath,
+      [
+        '-e',
+        `setTimeout(() => { require('node:child_process').spawnSync(${JSON.stringify(process.execPath)}, [${JSON.stringify(__filename)}, '--models'], { stdio: 'ignore', env: { ...process.env, PI_CAPSULE_DELAYED_SYNC: '1' } }); }, 1200);`,
+      ],
+      { detached: true, stdio: 'ignore' }
+    );
+    child.unref();
   }
 
   // 2. mcp.json

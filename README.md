@@ -36,13 +36,19 @@ new machine ◀──restore.sh── agent/ ◀──git clone───┘
 
 ## Update
 
-To update an existing machine (extensions, skills, prompts, and merged config/models without overwriting local API keys or credentials):
+If a machine was set up before `pi-capsule` became a Pi package, register it **once**:
+
+```bash
+pi install git:github.com/zhugez/pi-capsule
+```
+
+From then on, update everything (extensions, skills, prompts, and merged config/models without overwriting local API keys or credentials) with a single command:
 
 ```bash
 pi update --extensions
 ```
 
-`pi update --extensions` pulls the latest commit into `~/.pi/agent/git/github.com/zhugez/pi-capsule` and automatically runs `node scripts/sync-config.mjs --models` via `postinstall`.
+`pi install` and `pi update --extensions` automatically run `node scripts/sync-config.mjs --models` via `postinstall` (and move any duplicate legacy extensions/prompts/skills into `~/.pi/agent/migrated-<date>/`).
 
 To preview or run config sync manually:
 
