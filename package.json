@@ -1,0 +1,16 @@
+{
+  "name": "pi-capsule",
+  "private": true,
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./agent/extensions"
+    ],
+    "skills": [
+      "./agent/skills"
+    ],
+    "prompts": [
+      "./agent/prompts"
+    ]
+  }
+}
