@@ -416,6 +416,22 @@ function main() {
     skipped: [],
   };
 
+  // Validate every selected input before writes or resource migrations. Do not
+  // include parser errors: they can echo credentials from malformed JSON.
+  for (const filename of ['settings.json', 'mcp.json', ...(includeModels ? ['models.json'] : [])]) {
+    for (const dir of [REPO_AGENT_DIR, TARGET_AGENT_DIR]) {
+      const filePath = path.join(dir, filename);
+      if (!fs.existsSync(filePath)) continue;
+      try {
+        if (!isPlainObject(JSON.parse(fs.readFileSync(filePath, 'utf8')))) throw new Error();
+      } catch {
+        console.error(`Invalid JSON object: ${filePath}. Sync aborted; no files changed.`);
+        process.exitCode = 1;
+        return;
+      }
+    }
+  }
+
   if (!fs.existsSync(TARGET_AGENT_DIR) && !isDryRun) {
     fs.mkdirSync(TARGET_AGENT_DIR, { recursive: true });
   }
@@ -440,8 +456,7 @@ function main() {
       try {
         localSettings = JSON.parse(localRaw);
       } catch (err) {
-        console.error(`Error parsing ${settingsTargetPath}:`, err.message);
-        localSettings = {};
+        throw new Error(`Cannot parse ${settingsTargetPath}; sync aborted.`);
       }
     }
 
@@ -515,8 +530,7 @@ for (const d of ${JSON.stringify(delays)}) {
       try {
         localMcp = JSON.parse(localRaw);
       } catch (err) {
-        console.error(`Error parsing ${mcpTargetPath}:`, err.message);
-        localMcp = {};
+        throw new Error(`Cannot parse ${mcpTargetPath}; sync aborted.`);
       }
     }
 
@@ -580,8 +594,7 @@ for (const d of ${JSON.stringify(delays)}) {
         try {
           localModels = JSON.parse(localRaw);
         } catch (err) {
-          console.error(`Error parsing ${modelsTargetPath}:`, err.message);
-          localModels = {};
+          throw new Error(`Cannot parse ${modelsTargetPath}; sync aborted.`);
         }
       }
 
