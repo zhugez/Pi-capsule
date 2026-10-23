@@ -1,4 +1,6 @@
 {
-  "mode": "bars",
-  "codexLbProviders": ["macmini-codex"]
+  "codexLbProviders": [
+    "macmini-codex"
+  ],
+  "mode": "percent"
 }

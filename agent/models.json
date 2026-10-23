@@ -116,6 +116,1369 @@
           "maxTokens": 128000
         }
       ]
+    },
+    "iteracompute": {
+      "baseUrl": "https://api.iteracompute.com/v1",
+      "api": "openai-completions",
+      "apiKey": "$ITERACOMPUTE_API_KEY",
+      "models": [
+        {
+          "id": "qwen/qwen3.8-27b",
+          "name": "Qwen 3.8 27B",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 262144,
+          "maxTokens": 8192,
+          "compat": {
+            "thinkingFormat": "qwen-chat-template",
+            "maxTokensField": "max_tokens"
+          }
+        }
+      ]
+    },
+    "chf": {
+      "baseUrl": "https://api.clituasmail.com/v1",
+      "api": "openai-responses",
+      "apiKey": "$CHF_API_KEY",
+      "models": [
+        {
+          "id": "gpt-6.1-sol",
+          "name": "GPT-6.1-Sol (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max",
+            "ultra": "ultra"
+          }
+        },
+        {
+          "id": "gpt-6-astra",
+          "name": "GPT-6-Astra (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 872000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max",
+            "ultra": "ultra"
+          }
+        },
+        {
+          "id": "gpt-6-sol",
+          "name": "GPT-6-Sol (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max",
+            "ultra": "ultra"
+          }
+        },
+        {
+          "id": "gpt-6-luna",
+          "name": "GPT-6-Luna (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max"
+          }
+        },
+        {
+          "id": "gpt-5.6-sol",
+          "name": "GPT-5.6-Sol (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max",
+            "ultra": "ultra"
+          }
+        },
+        {
+          "id": "gpt-5.6-terra",
+          "name": "GPT-5.6-Terra (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max",
+            "ultra": "ultra"
+          }
+        },
+        {
+          "id": "gpt-5.6-luna",
+          "name": "GPT-5.6-Luna (50M)",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 32000,
+          "thinkingLevelMap": {
+            "xhigh": "xhigh",
+            "max": "max"
+          }
+        },
+        {
+          "id": "gpt-image-2",
+          "name": "GPT-Image-2 (50M)",
+          "reasoning": false,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        }
+      ]
+    },
+    "xpiki": {
+      "baseUrl": "https://api.xpiki.com/v1",
+      "api": "openai-completions",
+      "apiKey": "$XPIKI_API_KEY",
+      "models": [
+        {
+          "id": "claude-fable-5",
+          "name": "XPiki · Claude Fable 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-fable-5-1",
+          "name": "XPiki · Claude Fable 5.1",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-haiku-4-5",
+          "name": "XPiki · Claude Haiku 4.5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-opus-4-8",
+          "name": "XPiki · Claude Opus 4.8",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-opus-5",
+          "name": "XPiki · Claude Opus 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-opus-5-5",
+          "name": "XPiki · Claude Opus 5.5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "name": "XPiki · Claude Sonnet 4.6",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-sonnet-5",
+          "name": "XPiki · Claude Sonnet 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        }
+      ],
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsStore": false,
+        "supportsReasoningEffort": true,
+        "thinkingFormat": "openai",
+        "maxTokensField": "max_tokens"
+      }
+    },
+    "xpiki2": {
+      "baseUrl": "https://api.xpiki.com/v1",
+      "api": "openai-completions",
+      "apiKey": "$XPIKI2_API_KEY",
+      "models": [
+        {
+          "id": "claude-fable-5",
+          "name": "XPiki2 · Claude Fable 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-fable-5-1",
+          "name": "XPiki2 · Claude Fable 5.1",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-haiku-4-5",
+          "name": "XPiki2 · Claude Haiku 4.5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-opus-4-8",
+          "name": "XPiki2 · Claude Opus 4.8",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-opus-5",
+          "name": "XPiki2 · Claude Opus 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-opus-5-5",
+          "name": "XPiki2 · Claude Opus 5.5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "name": "XPiki2 · Claude Sonnet 4.6",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "claude-sonnet-5",
+          "name": "XPiki2 · Claude Sonnet 5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        }
+      ],
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsStore": false,
+        "supportsReasoningEffort": true,
+        "thinkingFormat": "openai",
+        "maxTokensField": "max_tokens"
+      }
+    },
+    "darkapi": {
+      "baseUrl": "https://darkapi.dev/v1",
+      "api": "openai-completions",
+      "apiKey": "$DARKAPI_API_KEY",
+      "models": [
+        {
+          "id": "Atria-Dawn-Preview",
+          "name": "darkapi · Atria-Dawn-Preview",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "beam",
+          "name": "darkapi · beam",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "big-pickle",
+          "name": "darkapi · big-pickle",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "big-pickle-unrestricted",
+          "name": "darkapi · big-pickle-unrestricted",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "codestral-latest",
+          "name": "darkapi · codestral-latest",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "deepseek-unrestricted",
+          "name": "darkapi · deepseek-unrestricted",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "deepseek-v4.1-flash",
+          "name": "darkapi · deepseek-v4.1-flash",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "glm-5.3-flash",
+          "name": "darkapi · glm-5.3-flash",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "hy3",
+          "name": "darkapi · hy3",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "laguna-xs-2.1",
+          "name": "darkapi · laguna-xs-2.1",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "longcat-2.5-preview",
+          "name": "darkapi · longcat-2.5-preview",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "longcat-unrestricted",
+          "name": "darkapi · longcat-unrestricted",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "mimo-v2.6-flash",
+          "name": "darkapi · mimo-v2.6-flash",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "mimo-v2.6-flash-unrestricted",
+          "name": "darkapi · mimo-v2.6-flash-unrestricted",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "minimax-m3.1-flash",
+          "name": "darkapi · minimax-m3.1-flash",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "ministral-14b-latest",
+          "name": "darkapi · ministral-14b-latest",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "muse-spark-1.3-contributor",
+          "name": "darkapi · muse-spark-1.3-contributor",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "nemotron-3-super",
+          "name": "darkapi · nemotron-3-super",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "nemotron-3-ultra",
+          "name": "darkapi · nemotron-3-ultra",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "nemotron-3.5-lightning",
+          "name": "darkapi · nemotron-3.5-lightning",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "qwen3.7-max",
+          "name": "darkapi · qwen3.7-max",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "qwen3.7-plus",
+          "name": "darkapi · qwen3.7-plus",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "qwen3.8-flash",
+          "name": "darkapi · qwen3.8-flash",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "qwen3.8-max",
+          "name": "darkapi · qwen3.8-max",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "qwen3.8-omni-flash",
+          "name": "darkapi · qwen3.8-omni-flash",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "space-bunny",
+          "name": "darkapi · space-bunny",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "step-3.7-flash",
+          "name": "darkapi · step-3.7-flash",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "step-3.7-unrestricted",
+          "name": "darkapi · step-3.7-unrestricted",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "step-5-preview",
+          "name": "darkapi · step-5-preview",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "step-5-unrestricted",
+          "name": "darkapi · step-5-unrestricted",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "stepfun-ai/step-5-preview",
+          "name": "darkapi · stepfun-ai/step-5-preview",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "xing4.0-29b-a4b",
+          "name": "darkapi · xing4.0-29b-a4b",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 128000,
+          "maxTokens": 16384
+        }
+      ],
+      "compat": {
+        "supportsUsageInStreaming": false
+      }
+    },
+    "AgentRouter": {
+      "baseUrl": "https://agentrouter.org/v1",
+      "api": "openai-responses",
+      "apiKey": "$AGENTROUTER_API_KEY",
+      "headers": {
+        "User-Agent": "codex_cli_rs/0.42.0"
+      },
+      "models": [
+        {
+          "id": "gpt-6.1-sol",
+          "name": "GPT-6.1-Sol",
+          "headers": {
+            "User-Agent": "codex_cli_rs/0.42.0"
+          }
+        },
+        {
+          "id": "gpt-5.6-sol",
+          "name": "GPT-5.6-Sol",
+          "headers": {
+            "User-Agent": "codex_cli_rs/0.42.0"
+          }
+        },
+        {
+          "id": "gpt-6-astra",
+          "name": "GPT-6-Astra",
+          "headers": {
+            "User-Agent": "codex_cli_rs/0.42.0"
+          }
+        }
+      ]
+    },
+    "AgentRouter-Messages": {
+      "baseUrl": "https://agentrouter.org",
+      "api": "anthropic-messages",
+      "apiKey": "$AGENTROUTER_MESSAGES_API_KEY",
+      "headers": {
+        "User-Agent": "claude-cli/2.0.0 (external, cli)",
+        "x-app": "cli"
+      },
+      "models": [
+        {
+          "id": "claude-opus-5",
+          "name": "Claude-Opus-5",
+          "headers": {
+            "User-Agent": "claude-cli/2.0.0 (external, cli)",
+            "x-app": "cli"
+          }
+        },
+        {
+          "id": "claude-opus-4-8",
+          "name": "Claude-Opus-4-8",
+          "headers": {
+            "User-Agent": "claude-cli/2.0.0 (external, cli)",
+            "x-app": "cli"
+          }
+        },
+        {
+          "id": "glm-5.3",
+          "name": "GLM-5.3",
+          "headers": {
+            "User-Agent": "claude-cli/2.0.0 (external, cli)",
+            "x-app": "cli"
+          }
+        },
+        {
+          "id": "deepseek-v4-flash",
+          "name": "Deepseek-V4-Flash",
+          "headers": {
+            "User-Agent": "claude-cli/2.0.0 (external, cli)",
+            "x-app": "cli"
+          }
+        },
+        {
+          "id": "claude-opus-5-5",
+          "name": "Claude-Opus-5-5",
+          "headers": {
+            "User-Agent": "claude-cli/2.0.0 (external, cli)",
+            "x-app": "cli"
+          }
+        }
+      ]
+    },
+    "workbuddy": {
+      "baseUrl": "http://127.0.0.1:7863/v1",
+      "api": "openai-completions",
+      "apiKey": "$WORKBUDDY_API_KEY",
+      "models": [
+        {
+          "id": "glm-5.3",
+          "name": "WorkBuddy · GLM 5.3",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 64000
+        },
+        {
+          "id": "glm-5.2",
+          "name": "WorkBuddy · GLM 5.2",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 48000
+        },
+        {
+          "id": "deepseek-v4.1-flash",
+          "name": "WorkBuddy · DeepSeek V4.1 Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000,
+          "thinkingLevelMap": {
+            "off": "off",
+            "minimal": "low",
+            "low": "low",
+            "medium": "high",
+            "high": "high",
+            "xhigh": "max",
+            "max": "max"
+          }
+        },
+        {
+          "id": "global:kimi-k2.6",
+          "name": "WorkBuddy · Kimi-K2.6",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 256000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:gpt-6-sol",
+          "name": "WorkBuddy · GPT-6-Sol",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:hy4-preview-f",
+          "name": "WorkBuddy · Hy4 preview",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 64000
+        },
+        {
+          "id": "global:gpt-5.6-sol",
+          "name": "WorkBuddy · GPT-5.6-Sol",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:gpt-5.4",
+          "name": "WorkBuddy · GPT-5.4",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 72000
+        },
+        {
+          "id": "global:step-5-preview",
+          "name": "WorkBuddy · Step-5-Preview",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 64000
+        },
+        {
+          "id": "global:primary-model",
+          "name": "WorkBuddy · Primary",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 72000
+        },
+        {
+          "id": "global:deepseek-v4.1-flash",
+          "name": "WorkBuddy · Deepseek-V4.1-Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000,
+          "thinkingLevelMap": {
+            "off": "off",
+            "minimal": "low",
+            "low": "low",
+            "medium": "high",
+            "high": "high",
+            "xhigh": "max",
+            "max": "max"
+          }
+        },
+        {
+          "id": "global:gemini-3.5-flash",
+          "name": "WorkBuddy · Gemini-3.5-Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 65536
+        },
+        {
+          "id": "global:glm-5.2",
+          "name": "WorkBuddy · GLM-5.2",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 48000
+        },
+        {
+          "id": "global:grok-4.7",
+          "name": "WorkBuddy · Grok-4.7",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:hy3",
+          "name": "WorkBuddy · Hy3",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 192000,
+          "maxTokens": 64000
+        },
+        {
+          "id": "global:kimi-k2.8-preview",
+          "name": "WorkBuddy · Kimi-K2.8-Preview",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:gpt-5.6-luna",
+          "name": "WorkBuddy · GPT-5.6-Luna",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:gpt-6-astra",
+          "name": "WorkBuddy · GPT-6-Astra",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:glm-5.3",
+          "name": "WorkBuddy · GLM-5.3",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 48000
+        },
+        {
+          "id": "global:gemini-3.8-flash",
+          "name": "WorkBuddy · Gemini-3.8-Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 65536
+        },
+        {
+          "id": "global:gpt-6.1-sol",
+          "name": "WorkBuddy · GPT-6.1-Sol",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:balanced-model",
+          "name": "WorkBuddy · Balanced",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 256000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:deepseek-v4.1-flash-sg",
+          "name": "WorkBuddy · Deepseek-V4.1-Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000,
+          "thinkingLevelMap": {
+            "off": "off",
+            "minimal": "low",
+            "low": "low",
+            "medium": "high",
+            "high": "high",
+            "xhigh": "max",
+            "max": "max"
+          }
+        },
+        {
+          "id": "global:minimax-m3.1-flash",
+          "name": "WorkBuddy · MiniMax-M3.1-Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:kimi-k3",
+          "name": "WorkBuddy · Kimi-K3",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:gpt-6-luna",
+          "name": "WorkBuddy · GPT-6-Luna",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:default-model",
+          "name": "WorkBuddy · Auto",
+          "reasoning": false,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 176000,
+          "maxTokens": 24000
+        },
+        {
+          "id": "global:glm-5.3-flash",
+          "name": "WorkBuddy · GLM-5.3-Flash",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:fast-model",
+          "name": "WorkBuddy · Fast",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 200000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:hy4-preview",
+          "name": "WorkBuddy · Hy4 preview",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 64000
+        },
+        {
+          "id": "global:gpt-5.6-terra",
+          "name": "WorkBuddy · GPT-5.6-Terra",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:gpt-5.5",
+          "name": "WorkBuddy · GPT-5.5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "global:auto-chat",
+          "name": "WorkBuddy · Auto",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 168000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:enhance-1.0",
+          "name": "WorkBuddy · Enhance-1.0",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000
+        },
+        {
+          "id": "global:o4-mini",
+          "name": "WorkBuddy · GPT-4o-Mini",
+          "reasoning": false,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 104000,
+          "maxTokens": 24000
+        },
+        {
+          "id": "global:deep-model",
+          "name": "WorkBuddy · Deep",
+          "reasoning": false,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 176000,
+          "maxTokens": 24000
+        },
+        {
+          "id": "global:gpt-5.3-codex",
+          "name": "WorkBuddy · GPT-5.3-Codex",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 272000,
+          "maxTokens": 72000
+        }
+      ]
+    },
+    "xpiki2-anthropic": {
+      "baseUrl": "https://api.xpiki.com",
+      "api": "anthropic-messages",
+      "apiKey": "$XPIKI2_ANTHROPIC_API_KEY",
+      "models": [
+        {
+          "id": "claude-fable-5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Fable 5",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-fable-5-1",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Fable 5.1",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-haiku-4-5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Haiku 4.5",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-opus-4-8",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Opus 4.8",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-opus-5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Opus 5",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-opus-5-5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 500000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Opus 5.5",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Sonnet 4.6",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        },
+        {
+          "id": "claude-sonnet-5",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 1000000,
+          "maxTokens": 32000,
+          "name": "XPiki2A · Claude Sonnet 5",
+          "thinkingLevelMap": {
+            "off": null,
+            "xhigh": "xhigh",
+            "max": "max"
+          },
+          "compat": {
+            "forceAdaptiveThinking": true
+          }
+        }
+      ]
     }
   }
 }
