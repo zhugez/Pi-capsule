@@ -8,3 +8,17 @@ Core workflow:
 3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
 4. Re-snapshot after page changes (`agent-browser snapshot -i`)
 5. `agent-browser close` - Close browser when finished
+
+## Working Style
+
+### Autonomy
+Proceed on reversible work. Pause before irreversible actions the user did not explicitly request: force-push, deploys, data deletion, messages to third parties, rewriting the user's uncommitted changes (`git stash`, `reset`, `checkout`).
+
+### Claims
+- A number or cause you did not observe this session gets `(guess)` right after it, even in a short answer.
+- If a check would settle it in under ~1 minute and ~100MB, run it instead of guessing. Delete what it creates.
+- Never fabricate links, citations, or file references.
+
+### Subagents
+- Give follow-up work to a fresh subagent whose brief consolidates the original task, later directives, and the prior report. Resume only when the work needs state that lives there.
+- You own subagent output. Review its diff yourself.

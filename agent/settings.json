@@ -1,8 +1,9 @@
 {
+  "$schema": "https://pi.dev/schemas/settings.schema.json",
   "lastChangelogVersion": "1.4.0",
   "theme": "dark",
-  "defaultProvider": "alpakyros-pool",
-  "defaultModel": "grok-4.7",
+  "defaultProvider": "workbuddy",
+  "defaultModel": "glm-5.3",
   "defaultThinkingLevel": "medium",
   "showCacheMissNotices": true,
   "packages": [
@@ -327,6 +328,9 @@
       },
       "openai-codex/gpt-5.5": {
         "reserveTokens": 111411
+      },
+      "workbuddy/glm-5.3": {
+        "reserveTokens": 400000
       }
     },
     "enabled": true,
@@ -340,34 +344,20 @@
   },
   "retry": {
     "enabled": true,
-    "baseDelayMs": 15000,
-    "maxRetries": 5,
+    "baseDelayMs": 5000,
+    "maxRetries": 8,
     "provider": {
       "timeoutMs": 120000
     }
   },
   "thinkingBudgets": {
-    "minimal": 2048,
-    "low": 4096,
-    "medium": 16384,
-    "high": 65536
+    "minimal": 1024,
+    "low": 2048,
+    "medium": 8192,
+    "high": 32768
   },
-  "enabledModels": [
-    "darkapi/deepseek-unrestricted",
-    "darkapi/step-5-preview",
-    "darkapi/laguna-xs-2.1",
-    "darkapi/nemotron-3-ultra",
-    "darkapi/Atria-Dawn-Preview",
-    "darkapi/glm-5.3-flash",
-    "xpiki/claude-sonnet-4-6",
-    "xpiki/claude-opus-4-8",
-    "xpiki/claude-fable-5-1",
-    "xpiki/claude-sonnet-5-5",
-    "antigravity/claude-sonnet-4-6",
-    "antigravity/claude-opus-4-6",
-    "AgentRouter-Messages/claude-sonnet-5-5",
-    "AgentRouter-Messages/deepseek-v4-flash",
-    "alpakyros-pool/grok-4.7"
-  ],
-  "httpIdleTimeoutMs": 300000
+  "httpIdleTimeoutMs": 300000,
+  "npmCommand": [
+    "pnpm"
+  ]
 }
