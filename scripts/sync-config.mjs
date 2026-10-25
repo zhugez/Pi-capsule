@@ -183,6 +183,18 @@ function mergeSettings(local = {}, repo = {}) {
     if (local[key] !== undefined) merged[key] = local[key];
   }
 
+  // Replace stale WorkBuddy fallback aliases with the repo's callable default.
+  // Pi can persist `default-model` when its dynamic catalog was unavailable;
+  // preserving that alias makes every later startup fail before refresh.
+  const staleWorkBuddyModel = merged.defaultProvider === 'workbuddy' &&
+    typeof local.defaultModel === 'string' &&
+    /^(default|fast|balanced|primary|deep)-model$/.test(local.defaultModel);
+  if (staleWorkBuddyModel) {
+    for (const key of ['defaultModel', 'defaultThinkingLevel']) {
+      if (repo[key] !== undefined) merged[key] = repo[key];
+    }
+  }
+
   return merged;
 }
 
