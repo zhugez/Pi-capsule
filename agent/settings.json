@@ -3,8 +3,8 @@
   "lastChangelogVersion": "1.4.0",
   "theme": "dark",
   "defaultProvider": "workbuddy",
-  "defaultModel": "glm-5.3",
-  "defaultThinkingLevel": "medium",
+  "defaultModel": "deepseek-v4.1-flash",
+  "defaultThinkingLevel": "max",
   "showCacheMissNotices": true,
   "packages": [
     "npm:pi-subagents",
