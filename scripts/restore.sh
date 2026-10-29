@@ -59,6 +59,19 @@ if ! command -v exom >/dev/null; then
   cargo install --git https://github.com/zhugez/ExoMind 2>/dev/null || true
 fi
 
+# crapper + mutator: ub-mode's CRAP and mutation gates, behind pi-pulse's /crap and /mutator.
+# mutator reads function namespaces from ../crapper, so they must stay siblings, and both
+# launchers resolve their own directory (a symlink would break them), hence the wrappers.
+UB_TOOLS="$HOME/.local/share/ub-tools"
+if ! command -v crapper >/dev/null || ! command -v mutator >/dev/null; then
+  mkdir -p "$UB_TOOLS" "$HOME/.local/bin"
+  for repo in crapper mutator; do
+    [ -d "$UB_TOOLS/$repo/.git" ] || git clone --depth 1 -q "https://github.com/unclebob/$repo" "$UB_TOOLS/$repo" 2>/dev/null || true
+    printf '#!/bin/sh\nexec "%s/%s/%s" "$@"\n' "$UB_TOOLS" "$repo" "$repo" >"$HOME/.local/bin/$repo" 2>/dev/null || true
+    chmod +x "$HOME/.local/bin/$repo" 2>/dev/null || true
+  done
+fi
+
 # `git gate`: enable the no-mistakes gate in a repo and route plain `git push` through it.
 git config --global alias.gate '!no-mistakes init && git config remote.pushDefault no-mistakes'
 

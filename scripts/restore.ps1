@@ -107,7 +107,10 @@ if (Has 'git') {
   if (Test-Path (Join-Path $hooks 'pre-commit')) {
     git config --global core.hooksPath ($hooks -replace '\\', '/')
   }
-  # `git gate`: enable the no-mistakes gate in a repo and route plain `git push` through it.
+  # crapper + mutator (ub-mode's CRAP and mutation gates, behind pi-pulse's /crap and
+# /mutator): POSIX sh launchers, so they are not installed here. Run restore.sh under
+# WSL or Git Bash; both read ~/.local/share/ub-tools, which WSL and Windows share.
+# `git gate`: enable the no-mistakes gate in a repo and route plain `git push` through it.
   git config --global alias.gate '!no-mistakes init && git config remote.pushDefault no-mistakes'
 } else {
   Write-Warning 'git not found: install Git for Windows (winget install Git.Git), then rerun.'

@@ -16,6 +16,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup. One script sn
   - [gitleaks](https://github.com/gitleaks/gitleaks) — secret scanner CLI, integrated into global git pre-commit hook and Pi (`/gitleaks`) · `~/.config/git/hooks/pre-commit`
   - [agent-browser](https://github.com/vercel-labs/agent-browser) — fast browser automation CLI for AI agents (Rust CLI + Chrome CDP) · `~/.agent-browser/config.json`
   - [ExoMind](https://github.com/zhugez/ExoMind) — portable knowledge & memory runtime (`exom`)
+  - [crapper](https://github.com/unclebob/crapper) + [mutator](https://github.com/unclebob/mutator) — ub-mode's CRAP and mutation gates, behind pi-pulse's `/crap` and `/mutator` · `~/.local/share/ub-tools/` (must stay siblings; wrappers in `~/.local/bin`)
 - **Extension prefs** — `pi-fff.json`, `subscription-usage-prefs.json`, plus `AGENTS.md` / `SYSTEM.md` / `keybindings.json` when present.
 
 ## How it works
@@ -31,7 +32,7 @@ new machine ◀──restore.sh── agent/ ◀──git clone───┘
 | Local packages | `/home/dev/pi-pulse` becomes `git:github.com/zhugez/pi-pulse` (read from the repo's `origin`) |
 | API keys | `"apiKey": "sk-…"` becomes `"apiKey": "$MACMINI_CODEX_API_KEY"`; existing `$VAR` / `!command` values are kept |
 | Restore / Sync | config files are safely merged with atomic writes and timestamped backups (`*.bak-<timestamp>`); API keys and credentials are preserved |
-| Companion CLIs | installed only when not on `PATH`; add one by appending `<command> <install-url>` to the `TOOLS` list in `restore.sh` and its config path to `DOTFILES` in `export.sh` |
+| Companion CLIs | installed only when not on `PATH`; add one by appending `<command> <install-url>` to the `TOOLS` list in `restore.sh` and its config path to `DOTFILES` in `export.sh`. CLIs without an install script (crapper, mutator) get their own block |
 | First launch | Pi installs any missing `npm:` / `git:` packages from `settings.json` on startup |
 
 ## Update
