@@ -340,7 +340,8 @@
     "blockImages": false
   },
   "terminal": {
-    "showTerminalProgress": true
+    "showTerminalProgress": true,
+    "images": "kitty"
   },
   "retry": {
     "enabled": true,
