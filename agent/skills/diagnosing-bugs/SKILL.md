@@ -97,6 +97,17 @@ If you cannot state the prediction, the hypothesis is a vibe: discard or sharpen
 
 **Show the ranked list to the user before testing.** They often have domain knowledge that re-ranks instantly ("we just deployed a change to #3"), or know hypotheses they've already ruled out. Cheap checkpoint, big time saver. Don't block on it; proceed with your ranking if the user is AFK.
 
+### Attack the premise
+
+Two fixes that share one premise failing the same gate is not two bugs — it is one wrong premise. Stop fixing.
+
+1. Write the premise in one sentence: "the cache is stale because the writer is slow".
+2. Count which actors hold the imbalance — who assumes what about whom.
+3. Remove the assignment. The responsibility the premise assumes exists is in the wrong place; move it, do not patch around it.
+4. Do not start another fix until you have done that.
+
+(From [unclebob/ub-mode](https://github.com/unclebob/ub-mode).)
+
 ## Phase 4: Instrument
 
 Each probe must map to a specific prediction from Phase 3. **Change one variable at a time.**
