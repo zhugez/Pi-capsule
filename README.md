@@ -134,4 +134,4 @@ Banner layout follows [pi-pulse](https://github.com/zhugez/pi-pulse). Illustrati
 
 ## License
 
-MIT
+GPL-3.0 (SPDX: `GPL-3.0-only`). See [`LICENSE`](LICENSE).
