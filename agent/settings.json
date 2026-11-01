@@ -16,8 +16,26 @@
     {
       "source": "git:github.com/zhugez/pi-capsule",
       "skills": [
-        "graphify",
-        "impeccable"
+        "!agent/skills/agent-browser",
+        "!agent/skills/ask-matt",
+        "!agent/skills/exomind",
+        "!agent/skills/git-guardrails-claude-code",
+        "!agent/skills/handoff",
+        "!agent/skills/implement",
+        "!agent/skills/resolving-merge-conflicts",
+        "!agent/skills/retro",
+        "!agent/skills/teach",
+        "!agent/skills/to-questionnaire",
+        "!agent/skills/to-spec",
+        "!agent/skills/to-tickets",
+        "!agent/skills/triage",
+        "!agent/skills/wait-what",
+        "!agent/skills/wayfinder",
+        "!agent/skills/wizard",
+        "!agent/skills/writing-beats",
+        "!agent/skills/writing-for-agents",
+        "!agent/skills/writing-fragments",
+        "!agent/skills/writing-shape"
       ]
     }
   ],
@@ -134,63 +152,6 @@
       },
       "antigravity/gpt-oss-120b": {
         "reserveTokens": 52429
-      },
-      "macmini-codex/gpt-6.1-sol": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-6-astra": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-6-sol": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-6-luna": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-reserve": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-5.6-sol": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-5.6-terra": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-5.6-luna": {
-        "reserveTokens": 348800
-      },
-      "macmini-codex/gpt-5.5": {
-        "reserveTokens": 108800
-      },
-      "macmini-codex/codex-auto-review": {
-        "reserveTokens": 348800
-      },
-      "iteracompute/qwen/qwen3.8-27b": {
-        "reserveTokens": 104858
-      },
-      "chf/gpt-6.1-sol": {
-        "reserveTokens": 200000
-      },
-      "chf/gpt-6-astra": {
-        "reserveTokens": 348800
-      },
-      "chf/gpt-6-sol": {
-        "reserveTokens": 108800
-      },
-      "chf/gpt-6-luna": {
-        "reserveTokens": 108800
-      },
-      "chf/gpt-5.6-sol": {
-        "reserveTokens": 108800
-      },
-      "chf/gpt-5.6-terra": {
-        "reserveTokens": 108800
-      },
-      "chf/gpt-5.6-luna": {
-        "reserveTokens": 108800
-      },
-      "chf/gpt-image-2": {
-        "reserveTokens": 51200
       },
       "claude-cli/claude-fable-5": {
         "reserveTokens": 419430

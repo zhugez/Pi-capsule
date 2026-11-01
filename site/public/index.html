@@ -370,7 +370,8 @@
       <a class="status__win" href="#sync"><span aria-hidden="true">1</span> sync</a>
       <a class="status__win" href="#diff"><span aria-hidden="true">2</span> diff</a>
       <a class="status__win" href="#tools"><span aria-hidden="true">3</span> tools</a>
-      <a class="status__win" href="#install"><span aria-hidden="true">4</span> install</a>
+      <a class="status__win" href="#pulse"><span aria-hidden="true">4</span> pulse</a>
+      <a class="status__win" href="#install"><span aria-hidden="true">5</span> install</a>
       <span class="status__fill" aria-hidden="true"></span>
       <span class="status__meta">GPL-3.0</span>
       <a class="status__src" href="https://github.com/zhugez/pi-capsule" target="_blank" rel="noopener noreferrer">source</a>
@@ -414,6 +415,7 @@
               <div class="term-console-actions">
                 <button class="term-chip-btn" onclick="execCommand('restore')">./restore.sh</button>
                 <button class="term-chip-btn" onclick="execCommand('export')">./export.sh</button>
+                <button class="term-chip-btn" onclick="execCommand('pulse')">pi-pulse</button>
                 <button class="term-chip-btn" onclick="execCommand('gate')">git gate</button>
               </div>
             </div>
@@ -546,9 +548,69 @@ new machine ◀─────restore.sh──── agent/ ◀─────gi
       </table>
     </section>
 
+        <section class="section-wrap container" id="pulse">
+      <div class="section-head">
+        <span class="tag">04 // EXTENSIONS</span>
+        <h2>pi-pulse Extension Suite.</h2>
+        <p class="lead">Bundled and reconciled automatically via git:github.com/zhugez/pi-pulse on every sync.</p>
+      </div>
+
+      <table class="tools-table">
+        <thead>
+          <tr>
+            <th>Extension</th>
+            <th>Type / Tool</th>
+            <th>Capability</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="t-name">goal</td>
+            <td>/goal command</td>
+            <td>Conversational multi-step goal planning, task hierarchy, and independent completion auditor</td>
+          </tr>
+          <tr>
+            <td class="t-name">todo</td>
+            <td>todo tool, /todos</td>
+            <td>Persistent 4-state task state machine (pending &rarr; in_progress &rarr; completed), blockedBy dependencies, live UI board</td>
+          </tr>
+          <tr>
+            <td class="t-name">advisor</td>
+            <td>ask_advisor tool</td>
+            <td>On-demand strategic second opinion, gated completion reviews, and multi-turn consultation chains</td>
+          </tr>
+          <tr>
+            <td class="t-name">model pools</td>
+            <td>codex / workbuddy</td>
+            <td>Native multi-account pooling with account labels, per-model rate limits, realm-aware effort, and automated failover</td>
+          </tr>
+          <tr>
+            <td class="t-name">code-mode</td>
+            <td>code_exec tool</td>
+            <td>Async in-sandbox JavaScript orchestration for multi-file checks and bulk ops without context bloat</td>
+          </tr>
+          <tr>
+            <td class="t-name">lens</td>
+            <td>code_inspect tool</td>
+            <td>Real-time syntax diagnostics, unread file edit guards, and instant symbol outlines</td>
+          </tr>
+          <tr>
+            <td class="t-name">loop-guard</td>
+            <td>runtime guard</td>
+            <td>Deadlock-free detection blocking repeating identical tool calls with actionable escalation guidance</td>
+          </tr>
+          <tr>
+            <td class="t-name">gates</td>
+            <td>/crap, /mutator</td>
+            <td>Uncle Bob complexity metrics (CRAP &le; 10) and mutation testing gates verifying test robustness</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
     <section class="section-wrap container" id="install">
       <div class="section-head">
-        <span class="tag">04 // DISPATCH</span>
+        <span class="tag">05 // DISPATCH</span>
         <h2>Install on fresh host.</h2>
         <p class="lead">Pick your environment. One command restores the entire agent workstation.</p>
       </div>
@@ -575,6 +637,7 @@ pi install git:github.com/zhugez/pi-capsule
         <a href="#sync">sync</a>
         <a href="#diff">diff</a>
         <a href="#tools">tools</a>
+        <a href="#pulse">pulse</a>
         <a href="#install">install</a>
         <a href="https://github.com/zhugez/pi-capsule" target="_blank" rel="noopener noreferrer">github</a>
       </nav>
@@ -656,6 +719,19 @@ pi install git:github.com/zhugez/pi-capsule
           { c: "tl-ok",  t: "  [3/4] gitleaks: 0 secrets detected" },
           { c: "tl-ok",  t: "  [4/4] diff review: zero suspicious changes" },
           { c: "tl-ok",  t: "✓ GATE PASSED: Pushing cleanly to origin/main" }
+        ]
+      },
+      pulse: {
+        cmd: "pi /pulse",
+        lines: [
+          { c: "tl-cyan", t: "[pi-pulse] Extensions loaded: goal, todo, advisor, codex-pool, workbuddy-pool" },
+          { c: "tl-ok",   t: "  [+] goal (/goal): conversational planner & independent auditor active" },
+          { c: "tl-ok",   t: "  [+] todo (todo, /todos): 4-state task state machine & live status board" },
+          { c: "tl-ok",   t: "  [+] advisor (ask_advisor): strategic review gates & consultation engine" },
+          { c: "tl-ok",   t: "  [+] model pools: codex-pool, workbuddy-pool (multi-account failover)" },
+          { c: "tl-ok",   t: "  [+] code-mode & lens: code_exec async sandbox + code_inspect diagnostics" },
+          { c: "tl-ok",   t: "  [+] gates: loop-guard, /crap complexity gate, /mutator mutation gate" },
+          { c: "tl-ok",   t: "✓ PASS: pi-pulse suite fully operational." }
         ]
       },
       pi: {
@@ -758,11 +834,13 @@ pi install git:github.com/zhugez/pi-capsule
       }
       if (raw === "help") {
         appendLine("tl-prompt", "dev@machine:~/pi-capsule$ help");
-        appendLine("tl-dim", "available commands: restore, export, gate, pi, clear");
+        appendLine("tl-dim", "available commands: restore, export, pulse, gate, pi, clear");
         return;
       }
 
-      if (raw.includes("restore")) {
+      if (raw.includes("pulse")) {
+        runRealisticCommand(REAL_COMMANDS.pulse);
+      } else if (raw.includes("restore")) {
         runRealisticCommand(REAL_COMMANDS.restore);
       } else if (raw.includes("export")) {
         runRealisticCommand(REAL_COMMANDS.export);

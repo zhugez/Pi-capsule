@@ -14,6 +14,18 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
 - **Settings** — theme, default provider/model, thinking level, compaction overrides, package list.
 - **Providers** — custom `models.json` providers, with literal API keys swapped for `$ENV_VAR` references.
 - **Skills, extensions & prompts** — distributed as a Pi package (`git:github.com/zhugez/pi-capsule`) with skills, extensions, and prompt templates.
+- **Integrated pi-pulse extension suite** — automatically synced via `git:github.com/zhugez/pi-pulse`:
+  - **Goal Planner (`/goal`)** — conversational goal planning with subtasks, persistent progress tracking, and independent verification auditor.
+  - **Interactive Todo (`todo`, `/todos`)** — persistent task engine with state machine (`pending` → `in_progress` → `completed`), dependency blockers (`blockedBy`), active spinner form labels, and live visual task board.
+  - **Advisor Oversight (`ask_advisor`)** — on-demand strategic guidance and review gates on a secondary model, with draft verification and follow-up chains.
+  - **Model Pools (`codex-pool`, `workbuddy-pool`, `alpakyros-pool`)** — multi-account pooling with account labels, per-model rate limits, realm-aware effort levels, and automatic failover.
+  - **Code Lens (`code_inspect`)** — syntax diagnostics, unread file edit guards, and instant symbol outlines.
+  - **Code Mode (`code_exec`)** — in-sandbox async JavaScript orchestration to run file operations and commands without context bloat.
+  - **Loop Guard** — automated detection that blocks repeating identical tool calls with actionable escalation reasons.
+  - **CRAP & Mutation Gates (`/crap`, `/mutator`)** — Uncle Bob complexity metrics (CRAP <= 10) and mutation testing gates.
+  - **Provider Bridges** — Antigravity (Google OAuth / Gemini / Claude), Gemini Web, and Claude Code CLI with local MCP bridging.
+  - **ExoMind Second Brain** — persistent graph-based second brain with typed relations (`REL:CAUSED_BY`) and automated inbox capture.
+  - **Ponytail Mode** — senior developer guidance enforcing YAGNI, standard library reuse, and minimal working diffs.
 - **Companion CLIs** — `restore.sh` installs each one if missing (official install script) and restores its config from `home/`:
   - [no-mistakes](https://github.com/kunchenguid/no-mistakes) — git push gate, plus a global `git gate` alias · `~/.no-mistakes/config.yaml`
   - [rtk](https://github.com/rtk-ai/rtk) — token-saving CLI proxy, hooked into Pi via `rtk init -g --agent pi` · `~/.config/rtk/*.toml`
