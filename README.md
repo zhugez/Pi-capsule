@@ -4,7 +4,12 @@
 
 # pi-capsule
 
-A portable capsule for my [Pi Coding Agent](https://pi.dev) setup. One script snapshots `~/.pi/agent` into this repo; one script unpacks it on a fresh machine. Secrets stay home.
+<p align="center">
+  <a href="https://pi-capsule.zhugez.workers.dev"><img src="https://img.shields.io/badge/website-pi--capsule.workers.dev-059669.svg?style=flat" alt="Live Website"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License"></a>
+</p>
+
+A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console](https://pi-capsule.zhugez.workers.dev)). One script snapshots `~/.pi/agent` into this repo; one script unpacks it on a fresh machine. Secrets stay home.
 
 - **Settings** — theme, default provider/model, thinking level, compaction overrides, package list.
 - **Providers** — custom `models.json` providers, with literal API keys swapped for `$ENV_VAR` references.
