@@ -11,3 +11,6 @@ antigravity-accounts.json
 # npm install artefacts (Pi runs npm install in the package clone)
 package-lock.json
 node_modules/
+
+.wrangler/
+pnpm-lock.yaml

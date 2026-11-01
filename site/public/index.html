@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pi-capsule: Your Pi setup, packed for every machine.</title>
+  <meta name="description" content="pi-capsule is an open-source tool that snapshots ~/.pi/agent into a portable git capsule and unpacks it on fresh machines. Secrets stay home, companion CLIs auto-bootstrap.">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112.5,400..700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      color-scheme: dark;
+      --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+      --text-xs: 0.75rem; --text-sm: 0.8125rem; --text-md: 0.9375rem; --text-lg: 1.0625rem; --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 2rem;
+      --text-display: clamp(2.25rem, 3.2vw + 1rem, 3.75rem);
+      --text-section: clamp(1.75rem, 1.8vw + 1rem, 2.75rem);
+      --text-title: clamp(1.0625rem, 0.4vw + 0.95rem, 1.25rem);
+      --text-lead: clamp(1rem, 0.3vw + 0.9rem, 1.1875rem);
+      --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap: 120px;
+      --color-paper: oklch(12.5% 0.012 150);
+      --color-paper-2: oklch(16% 0.016 150);
+      --color-paper-3: oklch(20.5% 0.022 150);
+      --color-ink: oklch(94% 0.03 140);
+      --color-ink-2: oklch(82% 0.05 142);
+      --color-muted: oklch(64% 0.06 145);
+      --color-rule: oklch(27% 0.028 148);
+      --color-rule-2: oklch(38% 0.045 146);
+      --color-accent: oklch(87% 0.2 142);
+      --color-accent-ink: oklch(14% 0.02 150);
+      --color-accent-wash: oklch(23% 0.06 145);
+      --font-mono: "Martian Mono", ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: clip; }
+    body {
+      margin: 0;
+      background: var(--color-paper);
+      color: var(--color-ink);
+      font-family: var(--font-mono);
+      font-size: var(--text-md);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      caret-color: var(--color-accent);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    code, pre { font: inherit; }
+    pre { margin: 0; }
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.12;
+      text-wrap: balance;
+    }
+    h1 { font-size: var(--text-display); max-width: 15ch; }
+    h2 { font-size: var(--text-section); max-width: 28ch; }
+    h3 { font-size: var(--text-title); line-height: 1.25; }
+    .lead { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.6; max-width: 44ch; }
+    .p { color: var(--color-muted); }
+    .container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+
+    .status {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--color-paper-2);
+      border-bottom: 1px solid var(--color-rule);
+      font-size: var(--text-sm);
+    }
+    .status__in {
+      display: flex; align-items: stretch;
+      max-width: var(--container); margin-inline: auto;
+      padding-inline: var(--gutter); min-height: 56px;
+    }
+    .status a {
+      display: inline-flex; align-items: center;
+      color: var(--color-ink-2); padding-inline: var(--space-md);
+      transition: background-color 90ms steps(1), color 90ms steps(1);
+    }
+    .status a:hover { background: var(--color-paper-3); color: var(--color-ink); }
+    .status__session {
+      background: var(--color-accent) !important;
+      color: var(--color-accent-ink) !important;
+      font-weight: 700; margin-right: var(--space-xs);
+    }
+    .status__win span { color: var(--color-muted); margin-right: 0.5ch; }
+    .status__fill { flex: 1; }
+    .status__meta { display: inline-flex; align-items: center; padding-inline: var(--space-md); color: var(--color-muted); }
+    .status__src { box-shadow: inset 1px 0 0 var(--color-rule); }
+
+    .hero { position: relative; overflow: clip; border-bottom: 1px solid var(--color-rule); }
+    .hero__grid {
+      display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--gap-columns); min-height: calc(100svh - 57px); align-items: center;
+    }
+    .hero__text { grid-column: 1 / span 7; position: relative; z-index: 2; padding-block: var(--space-3xl); }
+    .hero .lead { margin-top: var(--space-lg); }
+
+    .get {
+      margin-top: var(--space-2xl); max-width: 38rem;
+      border: 1px solid var(--color-rule); background: var(--color-paper-2);
+    }
+    .get__tabs { display: flex; border-bottom: 1px solid var(--color-rule); }
+    .get__tabs button {
+      appearance: none; border: 0; background: none;
+      color: var(--color-muted); padding: var(--space-sm) var(--space-md);
+      font-size: var(--text-sm); cursor: pointer;
+      box-shadow: inset 0 -2px 0 transparent;
+      transition: color 90ms steps(1);
+    }
+    .get__tabs button:hover { color: var(--color-ink); }
+    .get__tabs [aria-selected="true"] { color: var(--color-ink); box-shadow: inset 0 -2px 0 var(--color-accent); }
+    .get__line {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-md); font-size: var(--text-sm); gap: var(--space-md);
+    }
+    .get__line code { white-space: nowrap; overflow-x: auto; color: var(--color-ink); }
+    .copy {
+      appearance: none; border: 0; background: none; color: var(--color-muted);
+      cursor: pointer; padding: var(--space-2xs); display: grid; place-items: center;
+      transition: color 90ms steps(1); flex-shrink: 0;
+    }
+    .copy:hover { color: var(--color-accent); }
+    .copy svg { width: 16px; height: 16px; }
+
+    .hero__art {
+      grid-column: 8 / -1; display: flex; justify-content: center;
+      align-items: center; user-select: none;
+    }
+    .art-ascii-canvas {
+      font-size: 11px; line-height: 1.25; color: var(--color-accent);
+      background: var(--color-paper-2); padding: var(--space-xl);
+      border: 1px solid var(--color-rule); text-align: left;
+    }
+
+    .figs { border-bottom: 1px solid var(--color-rule); background: var(--color-paper-2); }
+    .figs__row { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .fig-item { padding: var(--space-2xl) var(--space-lg); }
+    .fig-item:not(:first-child) { border-left: 1px solid var(--color-rule); }
+    .fig-k { font-size: var(--text-sm); color: var(--color-muted); text-transform: uppercase; margin-bottom: var(--space-xs); }
+    .fig-v { font-size: var(--text-3xl); font-weight: 700; color: var(--color-accent); line-height: 1; }
+
+    .section-wrap { padding-block: var(--section-gap); border-bottom: 1px solid var(--color-rule); }
+    .section-head { margin-bottom: var(--space-2xl); }
+    .section-head .tag { font-size: var(--text-xs); color: var(--color-accent); text-transform: uppercase; margin-bottom: var(--space-xs); display: block; }
+
+    .map-box {
+      border: 1px solid var(--color-rule); background: var(--color-paper-2);
+      padding: var(--space-xl); overflow-x: auto;
+    }
+    .map-box pre { color: var(--color-ink-2); font-size: 13px; line-height: 1.5; }
+
+    .diff-box {
+      border: 1px solid var(--color-rule); background: var(--color-paper-2);
+      margin-top: var(--space-xl);
+    }
+    .diff-header {
+      padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-rule);
+      font-size: var(--text-sm); color: var(--color-muted); display: flex; justify-content: space-between;
+    }
+    .diff-lines {
+      list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.6;
+    }
+    .diff-lines li { padding: 4px var(--space-md); display: flex; gap: var(--space-md); }
+    .diff-lines li.del { color: var(--color-muted); background: rgba(239, 68, 68, 0.08); }
+    .diff-lines li.add { color: var(--color-accent); background: var(--color-accent-wash); }
+    .diff-lines .sign { width: 1.5ch; user-select: none; font-weight: 700; }
+
+    .tools-table {
+      width: 100%; border-collapse: collapse; border: 1px solid var(--color-rule);
+      background: var(--color-paper-2);
+    }
+    .tools-table th, .tools-table td {
+      padding: var(--space-md); text-align: left; border-bottom: 1px solid var(--color-rule);
+      font-size: var(--text-sm);
+    }
+    .tools-table th { background: var(--color-paper-3); color: var(--color-muted); font-weight: 600; text-transform: uppercase; }
+    .tools-table tr:last-child td { border-bottom: none; }
+    .tools-table .t-name { color: var(--color-accent); font-weight: 700; }
+    .tools-table .t-path { color: var(--color-muted); font-size: 12px; }
+
+    .foot {
+      padding-block: var(--space-3xl) var(--space-xl);
+      background: var(--color-paper-2);
+    }
+    .foot__base {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: var(--space-lg); font-size: var(--text-sm); color: var(--color-muted);
+    }
+    .foot nav { display: flex; gap: var(--space-lg); }
+    .foot nav a:hover { color: var(--color-accent); }
+
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--color-accent);
+      color: var(--color-accent-ink); padding: 8px 16px; font-family: var(--font-mono);
+      font-size: 12px; font-weight: 700; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      transform: translateY(100px); opacity: 0; transition: all 180ms ease;
+      z-index: 999; pointer-events: none;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 60rem) {
+      .status .status__win, .status__meta { display: none; }
+      .hero__grid { grid-template-columns: 1fr; }
+      .hero__text { grid-column: 1; padding-block: var(--space-2xl) 0; }
+      .hero__art { grid-column: 1; margin-top: var(--space-xl); }
+      .figs__row { grid-template-columns: repeat(2, 1fr); }
+      .fig-item:nth-child(3) { border-left: none; }
+      .fig-item:nth-child(n+3) { border-top: 1px solid var(--color-rule); }
+    }
+    @media (max-width: 40rem) {
+      .figs__row { grid-template-columns: 1fr; }
+      .fig-item:not(:first-child) { border-left: none; border-top: 1px solid var(--color-rule); }
+    }
+
+    @media (max-width: 60rem) {
+      :root { --gutter: 18px; --gap-columns: 16px; }
+      .hero h1 { font-size: 2rem; max-width: 100%; }
+      .hero .lead { font-size: 0.95rem; }
+      .hero__text { padding-block: var(--space-xl) var(--space-md); }
+      .get { max-width: 100%; }
+      .hero__art { width: 100%; justify-content: flex-start; overflow-x: auto; margin-top: var(--space-md); }
+      .art-ascii-canvas { font-size: 9px; padding: var(--space-sm); width: 100%; }
+    }
+
+    
+    .term-console-shell {
+      width: 100%;
+      max-width: 540px;
+      background: #080D0A;
+      border: 1px solid var(--color-rule);
+      border-radius: 4px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 24px rgba(69, 255, 122, 0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .term-console-header {
+      background: var(--color-paper-2);
+      border-bottom: 1px solid var(--color-rule);
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      user-select: none;
+    }
+    .term-console-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .c-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .c-red { background: #FF5F56; }
+    .c-yellow { background: #FFBD2E; }
+    .c-green { background: #27C93F; }
+    .term-console-title {
+      font-size: 11px;
+      color: var(--color-muted);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      text-align: center;
+    }
+    .term-console-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .term-chip-btn {
+      appearance: none;
+      background: var(--color-paper-3);
+      border: 1px solid var(--color-rule);
+      color: var(--color-ink-2);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 2px 7px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 90ms ease;
+    }
+    .term-chip-btn:hover {
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      border-color: var(--color-accent);
+    }
+    .term-console-body {
+      padding: 16px;
+      min-height: 290px;
+      max-height: 350px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--color-ink);
+      text-align: left;
+    }
+    .term-console-body::-webkit-scrollbar { width: 6px; }
+    .term-console-body::-webkit-scrollbar-thumb { background: var(--color-rule); }
+    .term-line {
+      margin-bottom: 2px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .tl-prompt { color: #55FA7B; font-weight: 700; }
+    .tl-user { color: #4ADE80; font-weight: 700; }
+    .tl-path { color: #38BDF8; }
+    .tl-dim { color: var(--color-muted); }
+    .tl-ok { color: #55FA7B; font-weight: 700; }
+    .tl-cyan { color: #38BDF8; }
+    .tl-warn { color: #FBBF24; font-weight: 600; }
+    .tl-err { color: #F87171; }
+    .term-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 14px;
+      background: #55FA7B;
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: termBlink 0.8s step-start infinite;
+    }
+    @keyframes termBlink { 50% { opacity: 0; } }
+    .term-console-input-bar {
+      display: flex;
+      align-items: center;
+      background: #060907;
+      border-top: 1px solid var(--color-rule);
+      padding: 7px 12px;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+    .term-user-tag { color: #4ADE80; font-weight: 700; white-space: nowrap; }
+    .term-path-tag { color: #38BDF8; white-space: nowrap; margin-right: 4px; }
+    .term-sig { color: #55FA7B; font-weight: 700; }
+    .term-input-field {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--color-ink);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      outline: none;
+    }
+    .term-send-btn {
+      appearance: none;
+      background: var(--color-accent);
+      color: var(--color-accent-ink);
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="status">
+    <nav class="status__in" aria-label="Sections">
+      <a class="status__session" href="#top">pi-capsule</a>
+      <a class="status__win" href="#sync"><span aria-hidden="true">1</span> sync</a>
+      <a class="status__win" href="#diff"><span aria-hidden="true">2</span> diff</a>
+      <a class="status__win" href="#tools"><span aria-hidden="true">3</span> tools</a>
+      <a class="status__win" href="#install"><span aria-hidden="true">4</span> install</a>
+      <span class="status__fill" aria-hidden="true"></span>
+      <span class="status__meta">GPL-3.0</span>
+      <a class="status__src" href="https://github.com/zhugez/pi-capsule" target="_blank" rel="noopener noreferrer">source</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="container hero__grid">
+        <div class="hero__text">
+          <h1>Your Pi setup, on every machine.</h1>
+          <p class="lead">One binary syncs them over git. No server, no secret leaks, plain SSH.</p>
+
+          <div class="get">
+            <div class="get__tabs" role="tablist">
+              <button role="tab" aria-selected="true" id="tab-bash" onclick="selectTab('bash')">bash</button>
+              <button role="tab" aria-selected="false" id="tab-ps" onclick="selectTab('ps')">powershell</button>
+              <button role="tab" aria-selected="false" id="tab-pkg" onclick="selectTab('pkg')">pi package</button>
+            </div>
+
+            <div class="get__line" id="cmd-panel">
+              <code><span class="p">$</span> <span id="cmd-text">git clone https://github.com/zhugez/pi-capsule &amp;&amp; cd pi-capsule &amp;&amp; ./scripts/restore.sh</span></code>
+              <button class="copy" type="button" onclick="copyCurrentTabCmd()" aria-label="Copy command">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25">
+                  <path d="M5 5V2.5h8.5V11H11M2.5 5h8.5v8.5H2.5z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__art">
+          <div class="term-console-shell">
+            <div class="term-console-header">
+              <div class="term-console-controls">
+                <span class="c-dot c-red"></span>
+                <span class="c-dot c-yellow"></span>
+                <span class="c-dot c-green"></span>
+              </div>
+              <div class="term-console-title">dev@machine: ~/pi-capsule &mdash; bash &mdash; 82x24</div>
+              <div class="term-console-actions">
+                <button class="term-chip-btn" onclick="execCommand('restore')">./restore.sh</button>
+                <button class="term-chip-btn" onclick="execCommand('export')">./export.sh</button>
+                <button class="term-chip-btn" onclick="execCommand('gate')">git gate</button>
+              </div>
+            </div>
+            <div class="term-console-body" id="real-term-body"></div>
+            <div class="term-console-input-bar">
+              <span class="term-user-tag">dev@machine</span>:<span class="term-path-tag">~/pi-capsule</span><span class="term-sig">$</span>
+              <input type="text" class="term-input-field" id="term-interactive-input" placeholder="type 'restore', 'export', 'gate', 'clear'..." onkeydown="handleTermKeyDown(event)" autocomplete="off" spellcheck="false">
+              <button class="term-send-btn" onclick="submitCurrentInput()">RUN</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="figs">
+      <div class="container figs__row">
+        <div class="fig-item">
+          <div class="fig-k"># machines</div>
+          <div class="fig-v">any</div>
+        </div>
+        <div class="fig-item">
+          <div class="fig-k"># leaked secrets</div>
+          <div class="fig-v">0</div>
+        </div>
+        <div class="fig-item">
+          <div class="fig-k"># companion tools</div>
+          <div class="fig-v">8</div>
+        </div>
+        <div class="fig-item">
+          <div class="fig-k"># licence</div>
+          <div class="fig-v">GPL</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-wrap container" id="sync">
+      <div class="section-head">
+        <span class="tag">01 // TOPOLOGY</span>
+        <h2>One sync, every host.</h2>
+        <p class="lead">Each host is reached directly over git or SSH. Nothing sits in the middle.</p>
+      </div>
+
+      <div class="map-box">
+        <pre>
+~/.pi/agent ──────export.sh─────▶ agent/ ──────git push─────▶ GitHub
+                                                               │
+new machine ◀─────restore.sh──── agent/ ◀─────git clone────────┘
+        </pre>
+      </div>
+    </section>
+
+    <section class="section-wrap container" id="diff">
+      <div class="section-head">
+        <span class="tag">02 // AIR GAP GUARANTEE</span>
+        <h2>Secrets stay home.</h2>
+        <p class="lead">Literal API keys are swapped for $ENV_VAR references before committing. Never leaked to git.</p>
+      </div>
+
+      <div class="diff-box">
+        <div class="diff-header">
+          <span>models.json (sanitized on export)</span>
+          <span>git diff</span>
+        </div>
+        <ul class="diff-lines">
+          <li class="del"><span class="sign">-</span><span>"apiKey": "sk-ant-api03-92f8a...real_secret_token...a01"</span></li>
+          <li class="add"><span class="sign">+</span><span>"apiKey": "$MACMINI_CODEX_API_KEY"</span></li>
+          <li><span class="sign"> </span><span>"defaultModel": "anthropic/claude-3-7-sonnet"</span></li>
+          <li><span class="sign"> </span><span>"thinkingLevel": "high"</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section-wrap container" id="tools">
+      <div class="section-head">
+        <span class="tag">03 // ROSTER</span>
+        <h2>8 Companion CLIs.</h2>
+        <p class="lead">Auto-bootstrapped and mounted during restore if not already present on $PATH.</p>
+      </div>
+
+      <table class="tools-table">
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Designation</th>
+            <th>Config Mount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="t-name">no-mistakes</td>
+            <td>Pre-push automated verification gate (git gate)</td>
+            <td class="t-path">~/.no-mistakes/config.yaml</td>
+          </tr>
+          <tr>
+            <td class="t-name">rtk</td>
+            <td>Token-saving compression and caching CLI proxy</td>
+            <td class="t-path">~/.config/rtk/*.toml</td>
+          </tr>
+          <tr>
+            <td class="t-name">agent-browser</td>
+            <td>Native Chrome CDP browser automation CLI</td>
+            <td class="t-path">~/.agent-browser/config.json</td>
+          </tr>
+          <tr>
+            <td class="t-name">treehouse</td>
+            <td>Reusable git worktree pool manager for agent branches</td>
+            <td class="t-path">~/.config/treehouse/config.toml</td>
+          </tr>
+          <tr>
+            <td class="t-name">gitleaks</td>
+            <td>Secret scanner CLI in global pre-commit hooks</td>
+            <td class="t-path">~/.config/git/hooks/pre-commit</td>
+          </tr>
+          <tr>
+            <td class="t-name">ExoMind</td>
+            <td>Persistent memory runtime and knowledge graph (exom)</td>
+            <td class="t-path">~/.exomind/</td>
+          </tr>
+          <tr>
+            <td class="t-name">crapper</td>
+            <td>Uncle Bob mode CRAP metric complexity analyzer</td>
+            <td class="t-path">~/.local/share/ub-tools/crapper</td>
+          </tr>
+          <tr>
+            <td class="t-name">mutator</td>
+            <td>Mutation testing engine for unit test validation</td>
+            <td class="t-path">~/.local/share/ub-tools/mutator</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section-wrap container" id="install">
+      <div class="section-head">
+        <span class="tag">04 // DISPATCH</span>
+        <h2>Install on fresh host.</h2>
+        <p class="lead">Pick your environment. One command restores the entire agent workstation.</p>
+      </div>
+
+      <div class="map-box">
+        <pre>
+# Linux or macOS:
+git clone https://github.com/zhugez/pi-capsule &amp;&amp; cd pi-capsule &amp;&amp; ./scripts/restore.sh
+
+# Windows (PowerShell 7+):
+git clone https://github.com/zhugez/pi-capsule ; cd pi-capsule ; powershell -ExecutionPolicy Bypass -File .\scripts\restore.ps1
+
+# Native Pi package registration:
+pi install git:github.com/zhugez/pi-capsule
+        </pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="container foot__base">
+      <div>pi-capsule // GPL-3.0 licence // MIT compatible</div>
+      <nav>
+        <a href="#sync">sync</a>
+        <a href="#diff">diff</a>
+        <a href="#tools">tools</a>
+        <a href="#install">install</a>
+        <a href="https://github.com/zhugez/pi-capsule" target="_blank" rel="noopener noreferrer">github</a>
+      </nav>
+      <div>Deployed on Cloudflare Workers edge network</div>
+    </div>
+  </footer>
+
+  <div id="toast">Copied to clipboard</div>
+
+  <script>
+    const TAB_COMMANDS = {
+      bash: "git clone https://github.com/zhugez/pi-capsule && cd pi-capsule && ./scripts/restore.sh",
+      ps: "git clone https://github.com/zhugez/pi-capsule ; cd pi-capsule ; powershell -ExecutionPolicy Bypass -File .\\scripts\\restore.ps1",
+      pkg: "pi install git:github.com/zhugez/pi-capsule"
+    };
+
+    let activeTab = "bash";
+
+    function selectTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll(".get__tabs button").forEach(b => {
+        b.setAttribute("aria-selected", "false");
+      });
+      document.getElementById("tab-" + tab).setAttribute("aria-selected", "true");
+      document.getElementById("cmd-text").innerText = TAB_COMMANDS[tab];
+    }
+
+    function copyCurrentTabCmd() {
+      const cmd = TAB_COMMANDS[activeTab];
+      navigator.clipboard.writeText(cmd).then(() => {
+        const t = document.getElementById("toast");
+        t.innerText = "Copied to clipboard";
+        t.classList.add("show");
+        setTimeout(() => { t.classList.remove("show"); }, 2000);
+      });
+    }
+
+    
+    const REAL_COMMANDS = {
+      restore: {
+        cmd: "./scripts/restore.sh",
+        lines: [
+          { c: "tl-dim", t: "[capsule] Sync config: repo agent/ -> ~/.pi/agent" },
+          { c: "tl-dim", t: "[capsule] Summary: settings.json, models.json merged" },
+          { c: "tl-cyan", t: "[pi] extensions up to date: 6 extensions bound" },
+          { c: "tl-dim", t: "[restore] Companion CLIs on $PATH:" },
+          { c: "tl-ok",  t: "  [OK] no-mistakes (git gate pre-push)" },
+          { c: "tl-ok",  t: "  [OK] rtk (compression token-proxy)" },
+          { c: "tl-ok",  t: "  [OK] agent-browser (Chrome CDP v131)" },
+          { c: "tl-ok",  t: "  [OK] treehouse (worktree pool manager)" },
+          { c: "tl-ok",  t: "  [OK] gitleaks (pre-commit secret scanner)" },
+          { c: "tl-ok",  t: "  [OK] exom (ExoMind persistent memory)" },
+          { c: "tl-ok",  t: "  [OK] crapper + mutator (ub-mode gates)" },
+          { c: "tl-cyan", t: "restored to ~/.pi/agent (backed up to *.bak)" },
+          { c: "tl-warn", t: "set env var: MACMINI_CODEX_API_KEY" },
+          { c: "tl-ok",  t: "✓ PASS: Workstation ready. Run 'pi' to begin." }
+        ]
+      },
+      export: {
+        cmd: "./scripts/export.sh",
+        lines: [
+          { c: "tl-dim", t: "[export] Scanning ~/.pi/agent configuration tree..." },
+          { c: "tl-cyan", t: "[export] Local package: ~/pi-pulse -> git:github.com/zhugez/pi-pulse" },
+          { c: "tl-ok",  t: "[export] models.json: 4 literal keys replaced with $ENV_VAR" },
+          { c: "tl-dim", t: "[export] Bundled 14 skills, 6 extensions, 4 prompt templates" },
+          { c: "tl-dim", t: "[export] Mirroring companion configs to ./home:" },
+          { c: "tl-dim", t: "  ~/.no-mistakes/config.yaml -> home/.no-mistakes/" },
+          { c: "tl-dim", t: "  ~/.config/rtk/config.toml  -> home/.config/rtk/" },
+          { c: "tl-dim", t: "  ~/.config/treehouse/       -> home/.config/treehouse/" },
+          { c: "tl-ok",  t: "✓ PASS: exported to ./agent (0 secrets committed)" }
+        ]
+      },
+      gate: {
+        cmd: "git gate",
+        lines: [
+          { c: "tl-dim", t: "[gate] Running no-mistakes pre-push pipeline..." },
+          { c: "tl-ok",  t: "  [1/4] linter: 0 errors across 48 files" },
+          { c: "tl-ok",  t: "  [2/4] tests: 14 integration passes in 1.4s" },
+          { c: "tl-ok",  t: "  [3/4] gitleaks: 0 secrets detected" },
+          { c: "tl-ok",  t: "  [4/4] diff review: zero suspicious changes" },
+          { c: "tl-ok",  t: "✓ GATE PASSED: Pushing cleanly to origin/main" }
+        ]
+      },
+      pi: {
+        cmd: "pi",
+        lines: [
+          { c: "tl-cyan", t: "pi coding agent v1.4.0 (models: anthropic, codex, google)" },
+          { c: "tl-dim",  t: "loaded: 14 skills, 6 extensions, 4 prompts from pi-capsule" },
+          { c: "tl-ok",   t: "active model: claude-3-7-sonnet (thinking: high)" },
+          { c: "tl-dim",  t: "type /help to inspect available tools" }
+        ]
+      }
+    };
+
+    let isTyping = false;
+    let autoSequenceTimer = null;
+
+    function appendLine(cls, text) {
+      const b = document.getElementById("real-term-body");
+      if (!b) return;
+      const row = document.createElement("div");
+      row.className = "term-line " + (cls || "");
+      row.textContent = text;
+      b.appendChild(row);
+      b.scrollTop = b.scrollHeight;
+    }
+
+    function runRealisticCommand(item, onFinish) {
+      if (isTyping) return;
+      isTyping = true;
+      const b = document.getElementById("real-term-body");
+      if (!b) return;
+
+      const promptRow = document.createElement("div");
+      promptRow.className = "term-line";
+      promptRow.innerHTML = '<span class="tl-user">dev@machine</span>:<span class="tl-path">~/pi-capsule</span><span class="tl-prompt">$ </span><span class="typed-text"></span><span class="term-cursor"></span>';
+      b.appendChild(promptRow);
+      b.scrollTop = b.scrollHeight;
+
+      const typedSpan = promptRow.querySelector(".typed-text");
+      const cursor = promptRow.querySelector(".term-cursor");
+      let idx = 0;
+
+      function typeKey() {
+        if (idx < item.cmd.length) {
+          typedSpan.textContent += item.cmd.charAt(idx);
+          idx++;
+          const pause = (item.cmd.charAt(idx - 1) === ' ') ? 90 : (25 + Math.random() * 35);
+          setTimeout(typeKey, pause);
+        } else {
+          if (cursor) cursor.remove();
+          setTimeout(() => {
+            streamRealisticOutput(item.lines, 0, () => {
+              isTyping = false;
+              if (onFinish) onFinish();
+            });
+          }, 120);
+        }
+      }
+      typeKey();
+    }
+
+    function streamRealisticOutput(lines, i, done) {
+      if (i >= lines.length) {
+        if (done) done();
+        return;
+      }
+      const l = lines[i];
+      appendLine(l.c, l.t);
+      const delay = (i === 0) ? 90 : (70 + Math.random() * 90);
+      setTimeout(() => {
+        streamRealisticOutput(lines, i + 1, done);
+      }, delay);
+    }
+
+    function execCommand(key) {
+      clearTimeout(autoSequenceTimer);
+      if (REAL_COMMANDS[key]) {
+        runRealisticCommand(REAL_COMMANDS[key]);
+      }
+    }
+
+    function handleTermKeyDown(e) {
+      if (e.key === "Enter") {
+        submitCurrentInput();
+      }
+    }
+
+    function submitCurrentInput() {
+      const input = document.getElementById("term-interactive-input");
+      if (!input) return;
+      const raw = input.value.trim();
+      input.value = "";
+      if (!raw) return;
+
+      clearTimeout(autoSequenceTimer);
+      if (raw === "clear") {
+        const b = document.getElementById("real-term-body");
+        if (b) b.innerHTML = "";
+        return;
+      }
+      if (raw === "help") {
+        appendLine("tl-prompt", "dev@machine:~/pi-capsule$ help");
+        appendLine("tl-dim", "available commands: restore, export, gate, pi, clear");
+        return;
+      }
+
+      if (raw.includes("restore")) {
+        runRealisticCommand(REAL_COMMANDS.restore);
+      } else if (raw.includes("export")) {
+        runRealisticCommand(REAL_COMMANDS.export);
+      } else if (raw.includes("gate")) {
+        runRealisticCommand(REAL_COMMANDS.gate);
+      } else if (raw === "pi") {
+        runRealisticCommand(REAL_COMMANDS.pi);
+      } else {
+        appendLine("tl-prompt", "dev@machine:~/pi-capsule$ " + raw);
+        appendLine("tl-err", "bash: " + raw + ": command not found (try: restore, export, gate, pi)");
+      }
+    }
+
+    function autoLoop(step) {
+      const sequence = ["restore", "export", "gate"];
+      const key = sequence[step % sequence.length];
+      runRealisticCommand(REAL_COMMANDS[key], () => {
+        autoSequenceTimer = setTimeout(() => {
+          appendLine("tl-dim", "");
+          autoLoop(step + 1);
+        }, 4000);
+      });
+    }
+
+    setTimeout(() => {
+      autoLoop(0);
+    }, 600);
+
+  </script>
+</body>
+</html>
