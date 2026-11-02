@@ -925,7 +925,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
       if (role !== "user" && role !== "assistant" && role !== "toolResult" && role !== "custom") {
         return msg;
       }
-      const content = (msg as { content: Array<Record<string, unknown>> }).content;
+      const content = (msg as unknown as { content: Array<Record<string, unknown>> }).content;
       let msgChanged = false;
       const nextContent = content.map((block) => {
         if (block?.type === "text" && typeof block.text === "string") {
@@ -939,7 +939,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
       });
       if (msgChanged) {
         modified = true;
-        return { ...msg, content: nextContent };
+        return { ...msg, content: nextContent } as unknown as typeof msg;
       }
       return msg;
     });
@@ -972,7 +972,7 @@ export default function dejavuExtension(pi: ExtensionAPI) {
         message: {
           ...(event.message as object),
           content: nextContent,
-        } as typeof event.message,
+        } as unknown as typeof event.message,
       };
     }
   });
