@@ -38,7 +38,11 @@ if ! command -v gitleaks >/dev/null; then
   [ "$arch" = "x86_64" ] && arch="x64"
   [ "$arch" = "aarch64" ] && arch="arm64"
   mkdir -p "$HOME/.local/bin"
-  curl -fsSL "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_${os}_${arch}.tar.gz" 2>/dev/null | tar -xz -C "$HOME/.local/bin" gitleaks 2>/dev/null || true
+  tag="$(curl -fsSL https://api.github.com/repos/gitleaks/gitleaks/releases/latest 2>/dev/null | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || true)"
+  ver="${tag#v}"
+  if [ -n "$ver" ]; then
+    curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/${tag}/gitleaks_${ver}_${os}_${arch}.tar.gz" 2>/dev/null | tar -xz -C "$HOME/.local/bin" gitleaks 2>/dev/null || true
+  fi
   chmod +x "$HOME/.local/bin/gitleaks" 2>/dev/null || true
 fi
 export PATH="$HOME/.local/bin:$PATH"

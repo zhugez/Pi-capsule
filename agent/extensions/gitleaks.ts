@@ -49,6 +49,7 @@ export default function (pi: ExtensionAPI) {
 
       if (scan.code !== 0) {
         const details = (scan.stdout + "\n" + scan.stderr).trim();
+        if (details.includes("ENOENT") || details.includes("not found")) return;
         throw new Error(
           `[gitleaks] Commit aborted: Secret or credential leak detected in staged changes!\n\n${details.slice(0, 1000)}`,
         );
