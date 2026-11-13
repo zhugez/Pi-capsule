@@ -1,162 +1,45 @@
 {
   "$schema": "https://pi.dev/schemas/models.schema.json",
   "providers": {
-    "xpiki": {
-      "baseUrl": "https://api.xpiki.com",
-      "api": "anthropic-messages",
-      "apiKey": "$XPIKI_API_KEY",
+    "cliproxy": {
+      "baseUrl": "http://127.0.0.1:8317/v1",
+      "api": "openai-completions",
+      "apiKey": "$CLIPROXY_API_KEY",
       "models": [
         {
-          "id": "claude-fable-5",
-          "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
-          "contextWindow": 500000,
-          "maxTokens": 32000,
-          "name": "XPiki · Claude Fable 5",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
+          "id": "gemini-3.8-flash-high",
+          "name": "Gemini 3.8 Flash High",
+          "contextWindow": 1000000,
+          "maxTokens": 65536
+        }
+      ]
+    },
+    "tuoke": {
+      "baseUrl": "https://tuokeapi.com/v1",
+      "api": "openai-completions",
+      "apiKey": "$TUOKE_API_KEY",
+      "models": [
         {
-          "id": "claude-fable-5-1",
+          "id": "gpt-6.1-sol",
+          "name": "Tuoke · GPT-6.1 Sol",
           "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
-          "contextWindow": 500000,
-          "maxTokens": 32000,
-          "name": "XPiki · Claude Fable 5.1",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
-        {
-          "id": "claude-haiku-4-5",
-          "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
           "contextWindow": 1000000,
           "maxTokens": 32000,
-          "name": "XPiki · Claude Haiku 4.5",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
-        {
-          "id": "claude-opus-4-8",
-          "reasoning": true,
           "input": [
             "text",
             "image"
-          ],
+          ]
+        },
+        {
+          "id": "gpt-6-sol",
+          "name": "Tuoke · GPT-6 Sol",
+          "reasoning": true,
           "contextWindow": 1000000,
           "maxTokens": 32000,
-          "name": "XPiki · Claude Opus 4.8",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
-        {
-          "id": "claude-opus-5",
-          "reasoning": true,
           "input": [
             "text",
             "image"
-          ],
-          "contextWindow": 500000,
-          "maxTokens": 32000,
-          "name": "XPiki · Claude Opus 5",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
-        {
-          "id": "claude-opus-5-5",
-          "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
-          "contextWindow": 500000,
-          "maxTokens": 32000,
-          "name": "XPiki · Claude Opus 5.5",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
-        {
-          "id": "claude-sonnet-4-6",
-          "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
-          "contextWindow": 1000000,
-          "maxTokens": 32000,
-          "name": "XPiki · Claude Sonnet 4.6",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
-        },
-        {
-          "id": "claude-sonnet-5",
-          "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
-          "contextWindow": 1000000,
-          "maxTokens": 32000,
-          "name": "XPiki · Claude Sonnet 5",
-          "thinkingLevelMap": {
-            "off": null,
-            "xhigh": "xhigh",
-            "max": "max"
-          },
-          "compat": {
-            "forceAdaptiveThinking": true
-          }
+          ]
         }
       ]
     }

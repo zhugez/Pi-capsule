@@ -1,9 +1,9 @@
 {
   "$schema": "https://pi.dev/schemas/settings.schema.json",
-  "lastChangelogVersion": "1.4.0",
+  "lastChangelogVersion": "1.5.2",
   "theme": "dark",
-  "defaultProvider": "workbuddy",
-  "defaultModel": "deepseek-v4.1-flash",
+  "defaultProvider": "antigravity",
+  "defaultModel": "gemini-3.8-flash",
   "defaultThinkingLevel": "max",
   "showCacheMissNotices": true,
   "packages": [
@@ -150,6 +150,12 @@
       "antigravity/gemini-4-argon": {
         "reserveTokens": 419430
       },
+      "antigravity/gemini-4-carbon": {
+        "reserveTokens": 419430
+      },
+      "antigravity/gemini-4-hydrogen": {
+        "reserveTokens": 419430
+      },
       "antigravity/gpt-oss-120b": {
         "reserveTokens": 52429
       },
@@ -157,6 +163,9 @@
         "reserveTokens": 419430
       },
       "claude-cli/claude-fable-5-1": {
+        "reserveTokens": 419430
+      },
+      "claude-cli/claude-fable-5-2": {
         "reserveTokens": 419430
       },
       "claude-cli/claude-haiku-4-5": {
@@ -243,6 +252,12 @@
       "gemini-web/gemini-4-argon": {
         "reserveTokens": 13435
       },
+      "gemini-web/gemini-4-carbon": {
+        "reserveTokens": 13435
+      },
+      "gemini-web/gemini-4-hydrogen": {
+        "reserveTokens": 13435
+      },
       "openai-codex/gpt-5.3-codex-spark": {
         "reserveTokens": 52429
       },
@@ -282,5 +297,12 @@
     "pnpm",
     "--config.lockfile=false",
     "--config.prefer-frozen-lockfile=false"
-  ]
+  ],
+  "extensionChangelogVersions": {
+    "{\"source\":\"npm:pi-subagents\",\"scope\":\"user\"}": "0.88.0",
+    "{\"source\":\"npm:pi-fast\",\"scope\":\"user\"}": "0.4.2",
+    "{\"source\":\"git:github.com/zhugez/pi-pulse\",\"scope\":\"user\"}": "1.1.0",
+    "{\"source\":\"git:github.com/zhugez/pi-capsule\",\"scope\":\"user\"}": "1.1.0",
+    "{\"source\":\"npm:@narumitw/pi-btw\",\"scope\":\"user\"}": "0.63.8"
+  }
 }

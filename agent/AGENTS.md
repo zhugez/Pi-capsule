@@ -11,7 +11,7 @@ Core workflow:
 
 ## Working Style
 
-For every user message, apply the `stella` skill before responding or acting. Use its clarity and meaning-preservation rules as the default for all work and responses. Do not rewrite the user's message unless they ask for a rewrite. Preserve facts and uncertainty. Follow an explicit user request for a different style.
+For every user message, read and apply `~/.pi/agent/git/github.com/zhugez/pi-pulse/skills/stella/SKILL.md` before responding or acting. Use Stella's clarity and meaning-preservation rules as the default for all work and responses. Do not rewrite the user's message unless they ask for a rewrite. Preserve facts and uncertainty. Follow an explicit user request for a different style.
 
 ### Autonomy
 Proceed on reversible work. Pause before irreversible actions the user did not explicitly request: force-push, deploys, data deletion, messages to third parties, rewriting the user's uncommitted changes (`git stash`, `reset`, `checkout`).
