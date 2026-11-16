@@ -32,6 +32,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - [treehouse](https://github.com/kunchenguid/treehouse) — reusable worktree pool · `~/.config/treehouse/config.toml`
   - [gitleaks](https://github.com/gitleaks/gitleaks) — secret scanner CLI, integrated into global git pre-commit hook and Pi (`/gitleaks`) · `~/.config/git/hooks/pre-commit`
   - [agent-browser](https://github.com/vercel-labs/agent-browser) — fast browser automation CLI for AI agents (Rust CLI + Chrome CDP) · `~/.agent-browser/config.json`
+  - [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) — modern web platform expertise, best practices & browser compatibility CLI · `npx modern-web-guidance` / `~/.agents/skills/modern-web-guidance`
   - [ExoMind](https://github.com/zhugez/ExoMind) — portable knowledge & memory runtime (`exom`)
   - [crapper](https://github.com/unclebob/crapper) + [mutator](https://github.com/unclebob/mutator) — ub-mode's CRAP and mutation gates, behind pi-pulse's `/crap` and `/mutator` · `~/.local/share/ub-tools/` (must stay siblings; wrappers in `~/.local/bin`)
 - **Extension prefs** — `pi-fff.json`, `subscription-usage-prefs.json`, plus `AGENTS.md` / `SYSTEM.md` / `keybindings.json` when present.

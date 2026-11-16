@@ -58,6 +58,11 @@ if ! command -v agent-browser >/dev/null; then
   npm install -g agent-browser 2>/dev/null && agent-browser install 2>/dev/null || true
 fi
 
+# modern-web-guidance: modern web best practices and browser compatibility CLI
+if ! command -v modern-web-guidance >/dev/null; then
+  npm install -g modern-web-guidance 2>/dev/null || true
+fi
+
 # exom: ExoMind knowledge & memory runtime
 if ! command -v exom >/dev/null; then
   cargo install --git https://github.com/zhugez/ExoMind 2>/dev/null || true
