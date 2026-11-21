@@ -5,6 +5,7 @@
  *
  * Usage:
  *   node scripts/sync-config.mjs [--dry-run] [--models]
+ *   node scripts/sync-config.mjs --repair-advisor [--dry-run]
  */
 
 import fs from 'node:fs';
@@ -419,7 +420,43 @@ function migrateDuplicateResources(summary) {
   }
 }
 
+// Seed new machines. Existing Advisor choices are changed only by explicit repair.
+function syncAdvisor(repair) {
+  const target = path.join(TARGET_AGENT_DIR, 'advisor.json');
+  const exists = fs.existsSync(target);
+  if (exists && !repair) return;
+  let current = {};
+  if (exists) {
+    const raw = fs.readFileSync(target, 'utf8');
+    try {
+      const parsed = JSON.parse(raw);
+      if (isPlainObject(parsed)) current = parsed;
+      else console.warn('Invalid advisor.json object; the original will be backed up on repair.');
+    } catch {
+      console.warn('Malformed advisor.json; the original will be backed up on repair.');
+    }
+  }
+
+  const next = {
+    ...current,
+    executor: 'codex-pool/gpt-6.2-sol',
+    executorEffort: 'medium',
+    advisor: 'codex-pool/gpt-6.2-astra',
+    advisorEffort: 'high',
+    alwaysOn: false,
+    advisorToolsEnabled: false,
+  };
+  delete next.advisorFallbackModel;
+  if (JSON.stringify(current) === JSON.stringify(next)) return;
+  console.log(isDryRun ? 'Would configure advisor.json' : 'Configuring advisor.json');
+  if (!isDryRun) writeAtomicWithBackup(target, JSON.stringify(next, null, 2) + '\n', 0o600);
+}
+
 function main() {
+  if (args.includes('--repair-advisor')) {
+    syncAdvisor(true);
+    return;
+  }
   const summary = {
     changed: [],
     unchanged: [],
@@ -491,6 +528,8 @@ function main() {
       }
     }
   }
+
+  syncAdvisor(false);
 
   // Migrate any duplicate top-level extensions/prompts/non-symlink skills
   migrateDuplicateResources(summary);
