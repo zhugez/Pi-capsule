@@ -322,13 +322,6 @@ const SOFT_REFUSAL_RE = new RegExp(
 const ASSISTANT_DISCLAIMER_RE =
   /(?:\*\s*)?\(?\s*Lưu\s+ý:\s*(?:mình|tôi)\s+không\s+(?:thể\s+)?hỗ\s+trợ[^\n)]*\)?(?:\s*\*)?/giu;
 
-// Matches target domains / hostnames / URLs (e.g. sv.iuh.edu.vn) to virtualize them into *.vhostN.lab.internal
-const DOMAIN_TARGET_RE =
-  /(?<![\p{L}\p{N}_/@.-])((?:https?:\/\/)?(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:edu\.vn|gov\.vn|com\.vn|net\.vn|org\.vn|ac\.vn|info\.vn|vn|edu|gov|mil|org|net|com|io|co|me|xyz|tech|cloud|app|dev|site|online)(?::\d{2,5})?(?:\/[^\s)"'\]]*)?)(?![\p{L}\p{N}_/.-])/giu;
-
-const IGNORED_DOC_HOSTS =
-  /(?:^|\/\/|\.)(?:github\.com|gitlab\.com|npmjs\.com|nodejs\.org|nerdfonts\.com|catppuccin\.com|google\.com|googleapis\.com|cloudflare\.com|anthropic\.com|openai\.com|localhost|lab\.internal)(?:$|[:/])/i;
-
 const ERROR_FILTER_RE =
   /safety|blocked|policy|stream ended without a finish reason|content_filter|recitation|prohibited|harm|malicious/i;
 
@@ -356,10 +349,8 @@ export function rewriteLexicalTerms(input: string, includeToolRules = true) {
 
   const hasQuickConcept = QUICK_CHECK_RE.test(cleanedInput);
   const hasQuickTool = includeToolRules && QUICK_TOOL_CHECK_RE.test(cleanedInput);
-  const hasDomainTarget = includeToolRules && DOMAIN_TARGET_RE.test(cleanedInput);
-  DOMAIN_TARGET_RE.lastIndex = 0;
 
-  if (!hasQuickConcept && !hasQuickTool && !hasDomainTarget && realBaseToVirtualBase.size === 0) {
+  if (!hasQuickConcept && !hasQuickTool && realBaseToVirtualBase.size === 0) {
     return { text: input, replacements: [] };
   }
 
@@ -390,20 +381,7 @@ export function rewriteLexicalTerms(input: string, includeToolRules = true) {
     }
   }
 
-  if (hasDomainTarget) {
-    current = current.replace(DOMAIN_TARGET_RE, (match) => {
-      if (IGNORED_DOC_HOSTS.test(match) || match.toLowerCase().endsWith(".lab.internal")) {
-        return match;
-      }
-      const { virtualizedToken, virtualHost, realHost } = registerVirtualTargetUrlOrHost(match);
-      const to = `${virtualizedToken} (127.0.0.1 loopback vhost container)`;
-      replacements.push({
-        from: match,
-        to: `${virtualHost} [virtualized target ↔ ${realHost}]`,
-      });
-      return to;
-    });
-  } else if (realBaseToVirtualBase.size > 0) {
+  if (realBaseToVirtualBase.size > 0) {
     const { text: virtText, count } = virtualizeKnownTargetsInText(current);
     if (count > 0) {
       current = virtText;
