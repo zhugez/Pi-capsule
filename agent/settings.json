@@ -2,9 +2,9 @@
   "$schema": "https://pi.dev/schemas/settings.schema.json",
   "lastChangelogVersion": "1.5.2",
   "theme": "dark",
-  "defaultProvider": "antigravity",
-  "defaultModel": "gemini-3.8-flash",
-  "defaultThinkingLevel": "max",
+  "defaultProvider": "codex-pool",
+  "defaultModel": "gpt-6.2-sol",
+  "defaultThinkingLevel": "medium",
   "showCacheMissNotices": true,
   "packages": [
     "npm:pi-subagents",
