@@ -11,7 +11,7 @@ Core workflow:
 
 ## Working Style
 
-For every user message, read and apply `~/.pi/agent/git/github.com/zhugez/pi-pulse/skills/stella/SKILL.md` before responding or acting. Use Stella's clarity and meaning-preservation rules as the default for all work and responses. Do not rewrite the user's message unless they ask for a rewrite. Preserve facts and uncertainty. Follow an explicit user request for a different style.
+Use `~/.pi/agent/git/github.com/zhugez/pi-pulse/skills/stella/SKILL.md` when drafting or revising English documentation, user-facing messages, or agent instructions where wording matters, or when the user requests Stella. Do not rewrite the user's message unless they ask for a rewrite. Preserve facts and uncertainty. Follow an explicit user request for a different style.
 
 ### Autonomy
 Proceed on reversible work. Pause before irreversible actions the user did not explicitly request: force-push, deploys, data deletion, messages to third parties, rewriting the user's uncommitted changes (`git stash`, `reset`, `checkout`).
@@ -22,7 +22,7 @@ Proceed on reversible work. Pause before irreversible actions the user did not e
 - Never fabricate links, citations, or file references.
 
 ### Subagents
-- Give follow-up work to a fresh subagent whose brief consolidates the original task, later directives, and the prior report. Resume only when the work needs state that lives there.
+- Continue follow-up edits in the current agent by default. Delegate independent tasks or request a separate review when useful.
 - You own subagent output. Review its diff yourself.
 
 ### Hard Blocks
