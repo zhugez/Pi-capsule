@@ -71,3 +71,25 @@ for (const side of ['local', 'repo']) {
     }
   }
 }
+
+test('advisor repair is explicit, backed up and repeatable', t => {
+  const f = fixture(t);
+  assert.equal(f.run().status, 0);
+  const defaults = f.read('advisor.json');
+  assert.equal(defaults.executor, 'codex-pool/gpt-6.2-sol');
+  assert.equal(defaults.advisor, 'codex-pool/gpt-6.2-astra');
+  assert.equal(defaults.advisorToolsEnabled, false);
+  for (const raw of ['{"executor":"old","contextMaxChars":123,"advisorFallbackModel":"old"}', '{invalid', '[]']) {
+    fs.writeFileSync(path.join(f.target, 'advisor.json'), raw);
+    const before = f.snapshot();
+    assert.equal(f.run().status, 0);
+    assert.equal(f.run('--dry-run', '--repair-advisor').status, 0);
+    assert.deepEqual(f.snapshot(), before);
+    assert.equal(f.run('--repair-advisor').status, 0);
+    const repaired = f.snapshot();
+    assert.ok(Object.entries(repaired).some(([k,v]) => k.startsWith('advisor.json.bak-') && v === raw));
+    assert.deepEqual(f.read('advisor.json'), raw.includes('contextMaxChars') ? { ...defaults, contextMaxChars: 123 } : defaults);
+    assert.equal(f.run('--repair-advisor').status, 0);
+    assert.deepEqual(f.snapshot(), repaired);
+  }
+});
