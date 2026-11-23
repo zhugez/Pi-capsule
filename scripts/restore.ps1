@@ -83,6 +83,7 @@ Install-Release 'no-mistakes' 'kunchenguid/no-mistakes' "windows-$arch\.zip$"
 Install-Release 'rtk'         'rtk-ai/rtk'              '^rtk-x86_64-pc-windows-msvc\.zip$'
 Install-Release 'treehouse'   'kunchenguid/treehouse'   "windows-$arch\.zip$"
 Install-Release 'gitleaks'    'gitleaks/gitleaks'       "windows_$gitleaksArch\.zip$"
+Install-Release 'witr'        'pranshuparmar/witr'      "^witr-windows-$arch\.zip$"
 
 # Pi itself (needs Node.js >= 20).
 if (-not (Has 'pi')) {

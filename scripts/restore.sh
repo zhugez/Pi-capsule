@@ -47,6 +47,13 @@ if ! command -v gitleaks >/dev/null; then
 fi
 export PATH="$HOME/.local/bin:$PATH"
 
+# witr: local process and port diagnostics for the Pi Pulse skill.
+if ! command -v witr >/dev/null; then
+  if ! curl -fsSL https://raw.githubusercontent.com/pranshuparmar/witr/v0.3.4/install.sh | INSTALL_PREFIX="$HOME/.local" bash; then
+    printf '%s\n' 'witr: install failed; see https://github.com/pranshuparmar/witr#2-installation' >&2
+  fi
+fi
+
 # Global git hooks: enable pre-commit secret leak guardrail via gitleaks
 if [ -f "$HOME/.config/git/hooks/pre-commit" ]; then
   chmod +x "$HOME/.config/git/hooks/pre-commit"
