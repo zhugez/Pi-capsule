@@ -118,18 +118,25 @@ function buildCapsulePackageEntry() {
   };
 }
 
+const SHOTCRAFT_SOURCE = /^git:github\.com\/Vincentwei1021\/video-shotcraft(?:\.git)?(?:@.+)?$/;
+
 function mergePackages(localPackages = [], repoPackages = []) {
   const result = [];
   const seenSources = new Set();
   const capsuleNormalized = normalizePackageSource('git:github.com/zhugez/pi-capsule');
   const configuredCapsuleEntry = buildCapsulePackageEntry();
+  const shotcraft = repoPackages.find((pkg) => pkg?.autoload === false && SHOTCRAFT_SOURCE.test(normalizePackageSource(pkg)));
 
   // 1. Process local packages first to preserve order and local-only packages
   for (const pkg of localPackages) {
     const norm = normalizePackageSource(pkg);
     if (!norm) continue;
 
-    if (norm === capsuleNormalized) {
+    if (shotcraft && SHOTCRAFT_SOURCE.test(norm)) {
+      if (seenSources.has(shotcraft.source)) continue;
+      result.push(typeof pkg === 'string' ? shotcraft : { ...pkg, source: shotcraft.source, autoload: shotcraft.autoload });
+      seenSources.add(shotcraft.source);
+    } else if (norm === capsuleNormalized) {
       result.push(configuredCapsuleEntry);
       seenSources.add(norm);
     } else {

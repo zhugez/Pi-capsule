@@ -96,6 +96,7 @@ git add -A && git commit -m "sync pi config" && git push
 git clone https://github.com/zhugez/pi-capsule && cd pi-capsule
 ./scripts/restore.sh                 # prints every env var it needs
 export MACMINI_CODEX_API_KEY=...
+export PATH="$HOME/.local/bin:$PATH"
 pi
 ```
 
