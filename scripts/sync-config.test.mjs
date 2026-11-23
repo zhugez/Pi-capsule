@@ -48,6 +48,25 @@ test('preserves supported local preferences and credentials; repeat sync is a no
   assert.deepEqual(f.snapshot(), before);
 });
 
+test('excludes the two skills Capsule already provides from Pulse', t => {
+  const f = fixture(t);
+  const source = 'git:github.com/zhugez/pi-pulse';
+  const exclusions = ['!skills/chrome-extensions', '!skills/modern-web-guidance'];
+  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify({ packages: [source] }));
+  for (const [local, expected] of [
+    [undefined, { source, skills: exclusions }],
+    [{ source, skills: ['!ponytail-help'], extensions: [] }, { source, skills: ['!ponytail-help', ...exclusions], extensions: [] }],
+    [{ source, skills: [] }, { source, skills: [] }],
+  ]) {
+    fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: local ? [local] : [] }));
+    assert.equal(f.run().status, 0);
+    assert.deepEqual(f.read('settings.json').packages[0], expected);
+    const before = f.snapshot();
+    assert.equal(f.run().status, 0);
+    assert.deepEqual(f.snapshot(), before);
+  }
+});
+
 test('dry-run does not change files', t => {
   const f = fixture(t);
   const before = f.snapshot();

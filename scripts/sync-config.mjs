@@ -159,7 +159,15 @@ function mergePackages(localPackages = [], repoPackages = []) {
     seenSources.add(capsuleNormalized);
   }
 
-  return result;
+  // Capsule already provides these skills when no shared copy is installed.
+  return result.map((pkg) => {
+    if (normalizePackageSource(pkg) !== 'git:github.com/zhugez/pi-pulse' || pkg.skills?.length === 0) return pkg;
+    const entry = typeof pkg === 'string' ? { source: pkg } : pkg;
+    return {
+      ...entry,
+      skills: [...new Set([...(entry.skills ?? []), '!skills/chrome-extensions', '!skills/modern-web-guidance'])],
+    };
+  });
 }
 
 // Per-machine preferences: keep the local value when present so a package
