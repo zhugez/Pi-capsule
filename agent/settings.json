@@ -6,12 +6,17 @@
   "defaultModel": "gpt-6.2-sol",
   "defaultThinkingLevel": "medium",
   "showCacheMissNotices": true,
+  "skills": ["git/github.com/Vincentwei1021/video-shotcraft/SKILL.md"],
   "packages": [
     "npm:pi-subagents",
     "npm:@ff-labs/pi-fff",
     "npm:@narumitw/pi-btw",
     "npm:@vigolium/piolium",
     "git:github.com/zhugez/pi-pulse",
+    {
+      "source": "git:github.com/Vincentwei1021/video-shotcraft@59f3e9b9e936ff2bce0e18446226d770a3f2f61f",
+      "autoload": false
+    },
     "npm:pi-fast",
     {
       "source": "git:github.com/zhugez/pi-capsule",

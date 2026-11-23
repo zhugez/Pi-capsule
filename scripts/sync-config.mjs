@@ -188,6 +188,10 @@ function mergeSettings(local = {}, repo = {}) {
   const repoPackages = Array.isArray(repo.packages) ? repo.packages : [];
   merged.packages = mergePackages(localPackages, repoPackages);
 
+  if (Array.isArray(local.skills) && Array.isArray(repo.skills)) {
+    merged.skills = [...new Set([...local.skills, ...repo.skills])];
+  }
+
   for (const key of LOCAL_PREFERENCE_KEYS) {
     if (local[key] !== undefined) merged[key] = local[key];
   }
