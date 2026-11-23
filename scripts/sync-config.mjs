@@ -118,21 +118,35 @@ function buildCapsulePackageEntry() {
   };
 }
 
-const SHOTCRAFT_SOURCE = /^git:github\.com\/Vincentwei1021\/video-shotcraft(?:\.git)?(?:@.+)?$/;
+function isShotcraftPackage(pkg) {
+  const source = (typeof pkg === 'string' ? pkg : pkg?.source ?? '').trim();
+  const hasGitPrefix = source.startsWith('git:');
+  const url = hasGitPrefix ? source.slice(4).trim() : source;
+  let repo;
+  if (/^(?:https?|ssh|git):\/\//.test(url)) {
+    if (!URL.canParse(url)) return false;
+    const parsed = new URL(url);
+    if (parsed.hostname !== 'github.com') return false;
+    repo = parsed.pathname.slice(1);
+  } else if (hasGitPrefix) {
+    repo = url.match(/^(?:github\.com\/|github:|git@github\.com:)(.+)$/)?.[1];
+  }
+  return /^Vincentwei1021\/video-shotcraft(?:\.git)?\/?(?:[@#].+|\/tree\/.+)?$/.test(repo ?? '');
+}
 
 function mergePackages(localPackages = [], repoPackages = []) {
   const result = [];
   const seenSources = new Set();
   const capsuleNormalized = normalizePackageSource('git:github.com/zhugez/pi-capsule');
   const configuredCapsuleEntry = buildCapsulePackageEntry();
-  const shotcraft = repoPackages.find((pkg) => pkg?.autoload === false && SHOTCRAFT_SOURCE.test(normalizePackageSource(pkg)));
+  const shotcraft = repoPackages.find((pkg) => pkg?.autoload === false && isShotcraftPackage(pkg));
 
   // 1. Process local packages first to preserve order and local-only packages
   for (const pkg of localPackages) {
     const norm = normalizePackageSource(pkg);
     if (!norm) continue;
 
-    if (shotcraft && SHOTCRAFT_SOURCE.test(norm)) {
+    if (shotcraft && isShotcraftPackage(pkg)) {
       if (seenSources.has(shotcraft.source)) continue;
       result.push(typeof pkg === 'string' ? shotcraft : { ...pkg, source: shotcraft.source, autoload: shotcraft.autoload });
       seenSources.add(shotcraft.source);
@@ -147,7 +161,8 @@ function mergePackages(localPackages = [], repoPackages = []) {
   }
 
   // 2. Add repo packages that are not present locally
-  for (const pkg of repoPackages) {
+  for (const repoPackage of repoPackages) {
+    const pkg = shotcraft && isShotcraftPackage(repoPackage) ? shotcraft : repoPackage;
     const norm = normalizePackageSource(pkg);
     if (!norm || seenSources.has(norm)) continue;
 

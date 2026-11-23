@@ -76,18 +76,26 @@ test('converges on the configured ShotCraft pin and preserves local filters', t 
   assert.equal(shotcraft?.autoload, false);
   assert.match(shotcraft.source.slice(source.length), /^@[a-f0-9]{40}$/);
   assert.ok(skills.includes(skill));
-  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify({ packages: [shotcraft], skills: [skill] }));
+  const https = 'https://github.com/Vincentwei1021/video-shotcraft.git';
+  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify({ packages: [https, shotcraft], skills: [skill] }));
 
   const pulse = { source: 'git:github.com/zhugez/pi-pulse', skills: ['!some-skill'] };
-  const other = { source: 'git:github.com/example/video-shotcraft@local', skills: [] };
+  const others = [
+    { source: 'git:github.com/example/video-shotcraft@local', skills: [] },
+    'https://github.com.evil/Vincentwei1021/video-shotcraft.git',
+    'https://github.com/Vincentwei1021/video-shotcraft-extra.git',
+  ];
   const localFilters = { skills: ['!shotcraft-local'], extensions: [] };
   for (const [local, expected] of [
     [[], shotcraft],
     [[{ source, autoload: true, ...localFilters }, `${source}.git@old-ref`, shotcraft.source], { ...shotcraft, ...localFilters }],
     [[`${source}@old-ref`], shotcraft],
     [[shotcraft.source], shotcraft],
+    [[https], shotcraft],
+    [[{ source: `git:${https}@old-ref`, ...localFilters }, `${https}#old-ref`, source], { ...shotcraft, ...localFilters }],
+    [['git:github:Vincentwei1021/video-shotcraft', 'ssh://git@github.com/Vincentwei1021/video-shotcraft.git'], shotcraft],
   ]) {
-    fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [pulse, other, ...local], skills: ['!local-skill'] }));
+    fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [pulse, ...others, ...local], skills: ['!local-skill'] }));
 
     const result = f.run();
     assert.equal(result.status, 0, result.stderr);
@@ -95,7 +103,7 @@ test('converges on the configured ShotCraft pin and preserves local filters', t 
       skills: ['!local-skill', skill],
       packages: [
         { ...pulse, skills: [...pulse.skills, '!skills/chrome-extensions', '!skills/modern-web-guidance'] },
-        other,
+        ...others,
         expected,
         'git:github.com/zhugez/pi-capsule',
       ],
