@@ -130,7 +130,14 @@ function mergePackages(localPackages = [], repoPackages = []) {
     if (!norm) continue;
 
     if (norm === capsuleNormalized) {
-      result.push(configuredCapsuleEntry);
+      if (typeof pkg === 'string') {
+        result.push(configuredCapsuleEntry);
+      } else {
+        const defaults = typeof configuredCapsuleEntry === 'string' ? {} : configuredCapsuleEntry;
+        const entry = { ...defaults, ...pkg };
+        if (entry.skills?.length) entry.skills = [...new Set([...(entry.skills ?? []), ...(defaults.skills ?? [])])];
+        result.push(entry);
+      }
       seenSources.add(norm);
     } else {
       // Keep local package as-is (including object form)
@@ -170,18 +177,13 @@ function mergePackages(localPackages = [], repoPackages = []) {
   });
 }
 
-// Per-machine preferences: keep the local value when present so a package
-// update (postinstall) never reverts a machine's own choice.
-const LOCAL_PREFERENCE_KEYS = [
-  'lastChangelogVersion',
-  'defaultProvider',
-  'defaultModel',
-  'defaultThinkingLevel',
-  'theme',
-];
-
 function mergeSettings(local = {}, repo = {}) {
-  const merged = deepMerge(local, repo);
+  // Seed missing defaults while preserving this machine's explicit choices.
+  const merged = deepMerge(repo, local);
+  // Operational profiles are complete machine choices, not partial defaults.
+  for (const key of ['retry', 'compaction', 'notices', 'extensionChangelogVersions']) {
+    if (local[key] !== undefined) merged[key] = local[key];
+  }
 
   // Packages exception: union by source identity with local priority
   const localPackages = Array.isArray(local.packages) ? local.packages : [];
@@ -192,14 +194,10 @@ function mergeSettings(local = {}, repo = {}) {
     merged.skills = [...new Set([...local.skills, ...repo.skills])];
   }
 
-  for (const key of LOCAL_PREFERENCE_KEYS) {
-    if (local[key] !== undefined) merged[key] = local[key];
-  }
-
   // Replace stale WorkBuddy fallback aliases with the repo's callable default.
   // Pi can persist `default-model` when its dynamic catalog was unavailable;
   // preserving that alias makes every later startup fail before refresh.
-  const staleWorkBuddyModel = merged.defaultProvider === 'workbuddy';
+  const staleWorkBuddyModel = merged.defaultProvider === 'workbuddy' && merged.defaultModel === 'default-model';
   if (staleWorkBuddyModel) {
     for (const key of ['defaultModel', 'defaultThinkingLevel']) {
       if (repo[key] !== undefined) merged[key] = repo[key];
@@ -227,28 +225,13 @@ function mergeModels(local = {}, repo = {}) {
 
   const mergedProviders = {};
 
-  // For providers in repo: repo values win for non-apiKey fields, keep local apiKey if non-empty
-  for (const [key, repoProv] of Object.entries(repoProviders)) {
-    const localProv = localProviders[key];
-    if (localProv && typeof localProv === 'object') {
-      const mergedProv = { ...repoProv };
-      if (typeof localProv.apiKey === 'string' && localProv.apiKey.trim().length > 0) {
-        mergedProv.apiKey = localProv.apiKey;
-      }
-      mergedProviders[key] = mergedProv;
-    } else {
-      mergedProviders[key] = { ...repoProv };
-    }
+  // An existing catalog owns provider selection; seed repo-only providers only on a fresh install.
+  const selected = Object.hasOwn(local, 'providers') ? localProviders : repoProviders;
+  for (const [key, provider] of Object.entries(selected)) {
+    mergedProviders[key] = deepMerge(repoProviders[key] ?? {}, provider);
   }
 
-  // Keep local-only providers
-  for (const [key, localProv] of Object.entries(localProviders)) {
-    if (!mergedProviders[key]) {
-      mergedProviders[key] = { ...localProv };
-    }
-  }
-
-  const merged = { ...local, ...repo };
+  const merged = { ...repo, ...local };
   merged.providers = mergedProviders;
   return merged;
 }

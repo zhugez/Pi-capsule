@@ -5,7 +5,11 @@
   "defaultProvider": "codex-pool",
   "defaultModel": "gpt-6.2-sol",
   "defaultThinkingLevel": "medium",
-  "showCacheMissNotices": true,
+  "notices": {
+    "cacheMisses": true,
+    "cacheWarming": true,
+    "compactionCosts": true
+  },
   "skills": ["git/github.com/Vincentwei1021/video-shotcraft/SKILL.md"],
   "packages": [
     "npm:pi-subagents",
