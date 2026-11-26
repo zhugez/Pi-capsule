@@ -67,25 +67,51 @@ test('excludes the two skills Capsule already provides from Pulse', t => {
   }
 });
 
-test('adds the configured ShotCraft path without replacing local skill filters', t => {
+test('converges on the configured ShotCraft pin and preserves local filters', t => {
   const f = fixture(t);
   const { packages, skills } = JSON.parse(fs.readFileSync(new URL('../agent/settings.json', import.meta.url), 'utf8'));
-  const shotcraft = packages.find(entry => entry.source?.includes('/video-shotcraft@'));
-  const skill = skills.find(entry => entry.endsWith('/video-shotcraft/SKILL.md'));
-  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify({ packages: [shotcraft], skills: [skill] }));
-  const localPackage = { source: 'git:github.com/zhugez/pi-pulse', skills: ['!some-skill'] };
-  fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [localPackage], skills: ['!local-skill'] }));
+  const source = 'git:github.com/Vincentwei1021/video-shotcraft';
+  const skill = 'git/github.com/Vincentwei1021/video-shotcraft/SKILL.md';
+  const shotcraft = packages.find(entry => entry.source?.split('@')[0] === source);
+  assert.equal(shotcraft?.autoload, false);
+  assert.match(shotcraft.source.slice(source.length), /^@[a-f0-9]{40}$/);
+  assert.ok(skills.includes(skill));
+  const https = 'https://github.com/Vincentwei1021/video-shotcraft.git';
+  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify({ packages: [https, shotcraft], skills: [skill] }));
 
-  const result = f.run();
-  assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(f.read('settings.json').skills, ['!local-skill', skill]);
-  assert.deepEqual(f.read('settings.json').packages.slice(0, 2), [
-    { ...localPackage, skills: [...localPackage.skills, '!skills/chrome-extensions', '!skills/modern-web-guidance'] },
-    shotcraft,
-  ]);
-  const before = f.snapshot();
-  assert.equal(f.run().status, 0);
-  assert.deepEqual(f.snapshot(), before);
+  const pulse = { source: 'git:github.com/zhugez/pi-pulse', skills: ['!some-skill'] };
+  const others = [
+    { source: 'git:github.com/example/video-shotcraft@local', skills: [] },
+    'https://github.com.evil/Vincentwei1021/video-shotcraft.git',
+    'https://github.com/Vincentwei1021/video-shotcraft-extra.git',
+  ];
+  const localFilters = { skills: ['!shotcraft-local'], extensions: [] };
+  for (const [local, expected] of [
+    [[], shotcraft],
+    [[{ source, autoload: true, ...localFilters }, `${source}.git@old-ref`, shotcraft.source], { ...shotcraft, ...localFilters }],
+    [[`${source}@old-ref`], shotcraft],
+    [[shotcraft.source], shotcraft],
+    [[https], shotcraft],
+    [[{ source: `git:${https}@old-ref`, ...localFilters }, `${https}#old-ref`, source], { ...shotcraft, ...localFilters }],
+    [['git:github:Vincentwei1021/video-shotcraft', 'ssh://git@github.com/Vincentwei1021/video-shotcraft.git'], shotcraft],
+  ]) {
+    fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [pulse, ...others, ...local], skills: ['!local-skill'] }));
+
+    const result = f.run();
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(f.read('settings.json'), {
+      skills: ['!local-skill', skill],
+      packages: [
+        { ...pulse, skills: [...pulse.skills, '!skills/chrome-extensions', '!skills/modern-web-guidance'] },
+        ...others,
+        expected,
+        'git:github.com/zhugez/pi-capsule',
+      ],
+    });
+    const before = f.snapshot();
+    assert.equal(f.run().status, 0);
+    assert.deepEqual(f.snapshot(), before);
+  }
 });
 
 test('preserves runtime preferences, model choices and deliberate provider removals', t => {

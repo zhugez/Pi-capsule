@@ -93,5 +93,6 @@ git config --global alias.gate '!no-mistakes init && git config remote.pushDefau
 
 echo "restored to $DST"
 jq -r '.. | .apiKey? | select(type=="string" and startswith("$")) | "set env var: " + gsub("[${}]"; "")' "$SRC/models.json" 2>/dev/null
-echo "then run: pi   (missing npm:/git: packages install on first startup), then /login for OAuth providers"
+echo 'then run: export PATH="$HOME/.local/bin:$PATH"'
+echo "          pi   (missing npm:/git: packages install on first startup), then /login for OAuth providers"
 echo "per repo: git gate   (no-mistakes init + plain git push goes through the gate)"

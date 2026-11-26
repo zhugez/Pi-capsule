@@ -27,7 +27,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - **Provider Bridges** — Antigravity (Google OAuth / Gemini / Claude), Gemini Web, and Claude Code CLI with local MCP bridging.
   - **ExoMind Second Brain** — persistent graph-based second brain with typed relations (`REL:CAUSED_BY`) and automated inbox capture.
   - **Ponytail Mode** — senior developer guidance enforcing YAGNI, standard library reuse, and minimal working diffs.
-- **Companion CLIs** — restore scripts install these tools if missing and restore available configs from `home/`:
+- **Companion CLIs** — `restore.sh` installs these tools on Unix/WSL if missing and restores available configs from `home/`:
   - [no-mistakes](https://github.com/kunchenguid/no-mistakes) — git push gate, plus a global `git gate` alias · `~/.no-mistakes/config.yaml`
   - [rtk](https://github.com/rtk-ai/rtk) — token-saving CLI proxy, hooked into Pi via `rtk init -g --agent pi` · `~/.config/rtk/*.toml`
   - [treehouse](https://github.com/kunchenguid/treehouse) — reusable worktree pool · `~/.config/treehouse/config.toml`
@@ -52,7 +52,7 @@ new machine ◀──restore.sh── agent/ ◀──git clone───┘
 | Local packages | `/home/dev/pi-pulse` becomes `git:github.com/zhugez/pi-pulse` (read from the repo's `origin`) |
 | API keys | `"apiKey": "sk-…"` becomes `"apiKey": "$MACMINI_CODEX_API_KEY"`; existing `$VAR` / `!command` values are kept |
 | Restore / Sync | config files are safely merged with atomic writes and timestamped backups (`*.bak-<timestamp>`); API keys and credentials are preserved |
-| Companion CLIs | installed only when not on `PATH`; add one by appending `<command> <install-url>` to the `TOOLS` list in `restore.sh` and its config path to `DOTFILES` in `export.sh`. CLIs without an install script (crapper, mutator) get their own block |
+| Companion CLIs (Unix/WSL) | installed only when not on `PATH`; add one by appending `<command> <install-url>` to the `TOOLS` list in `restore.sh` and its config path to `DOTFILES` in `export.sh`. CLIs without an install script (crapper, mutator) get their own block |
 | First launch | Pi installs any missing `npm:` / `git:` packages from `settings.json` on startup |
 
 ## Update
@@ -78,6 +78,12 @@ node scripts/sync-config.mjs --dry-run
 node scripts/sync-config.mjs [--models]
 ```
 
+If ShotCraft is already installed, syncing a new pin does not update its checkout. After manual sync or a Capsule install or update that changes the pin, run this command before starting Pi:
+
+```bash
+pi update git:github.com/Vincentwei1021/video-shotcraft
+```
+
 ### Edit workflow
 
 1. Edit inside `~/.pi/agent/git/github.com/zhugez/pi-capsule` (or your local clone).
@@ -97,6 +103,7 @@ git add -A && git commit -m "sync pi config" && git push
 git clone https://github.com/zhugez/pi-capsule && cd pi-capsule
 ./scripts/restore.sh                 # prints every env var it needs
 export MACMINI_CODEX_API_KEY=...
+export PATH="$HOME/.local/bin:$PATH"
 pi
 ```
 
