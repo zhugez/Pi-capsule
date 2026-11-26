@@ -17,7 +17,6 @@
       "source": "git:github.com/Vincentwei1021/video-shotcraft@59f3e9b9e936ff2bce0e18446226d770a3f2f61f",
       "autoload": false
     },
-    "npm:pi-fast",
     {
       "source": "git:github.com/zhugez/pi-capsule",
       "skills": [
@@ -305,7 +304,6 @@
   ],
   "extensionChangelogVersions": {
     "{\"source\":\"npm:pi-subagents\",\"scope\":\"user\"}": "0.88.0",
-    "{\"source\":\"npm:pi-fast\",\"scope\":\"user\"}": "0.4.2",
     "{\"source\":\"git:github.com/zhugez/pi-pulse\",\"scope\":\"user\"}": "1.1.0",
     "{\"source\":\"git:github.com/zhugez/pi-capsule\",\"scope\":\"user\"}": "1.1.0",
     "{\"source\":\"npm:@narumitw/pi-btw\",\"scope\":\"user\"}": "0.63.8"

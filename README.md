@@ -19,6 +19,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - **Interactive Todo (`todo`, `/todos`)** — persistent task engine with state machine (`pending` → `in_progress` → `completed`), dependency blockers (`blockedBy`), active spinner form labels, and live visual task board.
   - **Advisor Oversight (`ask_advisor`)** — on-demand strategic guidance and review gates on a secondary model, with draft verification and follow-up chains.
   - **Model Pools (`codex-pool`, `workbuddy-pool`)** — multi-account pooling with account labels, per-model rate limits, realm-aware effort levels, and automatic failover.
+  - **Fast Mode (`/fast`)** — bundled Fast processing toggle for OpenAI Responses models, including the local Xingchi API provider.
   - **Code Lens (`code_inspect`)** — syntax diagnostics, unread file edit guards, and instant symbol outlines.
   - **Code Mode (`code_exec`)** — in-sandbox async JavaScript orchestration to run file operations and commands without context bloat.
   - **Loop Guard** — automated detection that blocks repeating identical tool calls with actionable escalation reasons.
