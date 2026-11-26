@@ -65,7 +65,7 @@ export default function (pi: ExtensionAPI) {
 				: `~${new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(limit - usage.tokens + 1).replace("K", "k")} left`;
 		const { theme } = ctx.ui;
 		const detailColor = usage.tokens === null ? "dim" : usage.tokens > limit ? "warning" : "muted";
-		ctx.ui.setStatus(statusKey, `${theme.fg("muted", "Compact")} ${theme.fg("accent", `${threshold}%`)}${theme.fg("dim", " · ")}${theme.fg(detailColor, remaining)}`);
+		ctx.ui.setStatus(statusKey, `${theme.fg("dim", "○")} ${theme.fg("accent", "\u{f0628}")} ${theme.fg("muted", "compact: ")}${theme.fg("accent", `@${threshold}%`)}${theme.fg("dim", " · ")}${theme.fg(detailColor, remaining)}`);
 	}
 
 	pi.on("session_start", (_event, ctx) => {

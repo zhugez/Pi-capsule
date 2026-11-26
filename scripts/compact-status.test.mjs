@@ -54,11 +54,11 @@ async function fixture(t) {
 test('packaged compact footer preserves threshold, unknown usage and non-TUI behavior', async (t) => {
   const h = await fixture(t);
   h.event('turn_end');
-  assert.equal(h.status(), 'Compact 30% · ~153.9k left');
+  assert.equal(h.status(), '○ 󰘨 compact: @30% · ~153.9k left');
   assert.deepEqual(h.styles.at(-1), ['muted', '~153.9k left']);
   for (const [tokens, expected] of [[299_999, '~2 left'], [300_000, '~1 left'], [300_001, 'over threshold'], [null, 'usage unknown']]) {
     h.setTokens(tokens); h.event('turn_end');
-    assert.equal(h.status(), `Compact 30% · ${expected}`);
+    assert.equal(h.status(), `○ 󰘨 compact: @30% · ${expected}`);
   }
   const before = h.status();
   h.event('turn_end', {}, { ...h.ctx, mode: 'rpc' });
@@ -75,14 +75,14 @@ test('compact publishes a scoped snapshot and restores fallback when dock releas
   const snapshots = [];
   h.bus.on('pi-pulse:telemetry:v1', (value) => snapshots.push(value));
   h.event('session_start');
-  assert.equal(h.status(), 'Compact 30% · ~153.9k left');
+  assert.equal(h.status(), '○ 󰘨 compact: @30% · ~153.9k left');
   assert.deepEqual(snapshots.at(-1), { kind: 'compact', scope: 'test-session:xingchiapi/gpt-6.1-sol', data: { tokens: 146_076, limit: 300_000, contextWindow: 1_000_000 } });
   h.bus.emit('pi-pulse:telemetry-dock:v1', { available: true });
   assert.equal(h.status(), undefined);
   h.bus.emit('pi-pulse:telemetry-request:v1', {});
   assert.equal(snapshots.at(-1).data.tokens, 146_076);
   h.bus.emit('pi-pulse:telemetry-dock:v1', { available: false });
-  assert.equal(h.status(), 'Compact 30% · ~153.9k left');
+  assert.equal(h.status(), '○ 󰘨 compact: @30% · ~153.9k left');
   h.event('session_shutdown');
   const count = snapshots.length;
   h.bus.emit('pi-pulse:telemetry-request:v1', {});
