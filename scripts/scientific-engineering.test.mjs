@@ -65,14 +65,26 @@ test('configuration, task scope and exact paired acceptance have explicit bounda
   assert.equal(configure().upstreamRevision, UPSTREAM.revision);
 });
 
-test('catalog routing validates exact refs, names and decorated DeepSeek names without invented fallback', () => {
+test('catalog routing accepts only exact references and unique normalized full names or IDs', () => {
   const models = [{ provider: 'local', id: 'a', name: 'GPT-6.2 Sol' }, { provider: 'other', id: 'b', name: 'HMS · DeepSeek V4.1 Flash Free' }, { provider: 'local', id: 'c', name: 'GPT-6.2 Astra' }];
   assert.equal(selectModel(models, 'local/c'), models[2]);
   assert.equal(selectModel(models, 'GPT-6.2 Sol'), models[0]);
-  assert.equal(selectModel(models, 'DeepSeek 4.1 Flash'), models[1]);
+  assert.equal(selectModel(models, 'gpt 6.2 SOL'), models[0]);
+  assert.equal(selectModel(models, 'b'), models[1]);
+  assert.equal(selectModel(models, 'DeepSeek 4.1 Flash'), undefined);
+  assert.equal(selectModel(models, 'HMS · DeepSeek V4.1 Flash Free'), models[1]);
+  const routine = { provider: 'other', id: 'deepseek-v4.1-flash', name: 'DeepSeek V4.1 Flash' };
+  assert.equal(selectModel([routine], 'DeepSeek 4.1 Flash'), routine);
+  const mini = { provider: 'local', id: 'mini', name: 'GPT-6.2 Sol Mini' };
+  assert.equal(selectModel([mini], 'GPT-6.2 Sol'), undefined);
+  assert.equal(selectModel([mini], 'local/mini'), mini);
   assert.equal(selectModel(models, 'not-installed'), undefined);
   assert.equal(selectModel(models, '---'), undefined);
-  assert.equal(selectModel([...models, { provider: 'second', id: 'a', name: 'GPT-6.2 Sol' }], 'GPT-6.2 Sol'), undefined);
+  const ambiguous = [...models, { provider: 'second', id: 'a', name: 'GPT-6.2 Sol' }];
+  assert.equal(selectModel(ambiguous, 'GPT-6.2 Sol'), undefined);
+  assert.equal(selectModel(ambiguous, 'a'), undefined);
+  assert.equal(selectModel(ambiguous, 'local/a'), models[0]);
+  assert.equal(selectModel([...models, { provider: 'second', id: 'gpt-6.2-sol', name: 'Other model' }], 'GPT-6.2 Sol'), undefined);
   assert.equal(selectModel(models, 'GPT'), undefined);
   assert.throws(() => configure({ models: { routine: '---' } }), /catalog name/);
 });

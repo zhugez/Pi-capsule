@@ -513,7 +513,5 @@ export function selectModel<T extends CatalogModel>(models: T[], preference: str
   const name = normalize(preference);
   if (!name) return undefined;
   const named = models.filter(m => normalize(m.name) === name || normalize(m.id) === name);
-  if (named.length) return named.length === 1 ? named[0] : undefined;
-  const decorated = models.filter(m => normalize(m.name).includes(name));
-  return decorated.length === 1 ? decorated[0] : undefined;
+  return named.length === 1 ? named[0] : undefined;
 }
