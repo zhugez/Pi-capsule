@@ -1,0 +1,43 @@
+{
+  "objective": "Reduce membership-filter latency without changing outputs",
+  "kind": "optimization",
+  "constraints": [
+    "Preserve SameValueZero membership semantics, order, duplicates and seeded correctness outputs.",
+    "Use the fixed datasets and benchmark procedure."
+  ],
+  "scope": [
+    "target.mjs"
+  ],
+  "protectedFiles": [
+    "correctness.mjs",
+    "benchmark.mjs",
+    "profile.mjs"
+  ],
+  "correctness": [
+    [
+      "node",
+      "correctness.mjs"
+    ]
+  ],
+  "benchmark": [
+    "node",
+    "benchmark.mjs"
+  ],
+  "profile": [
+    "node",
+    "profile.mjs"
+  ],
+  "metric": {
+    "name": "latency_ms",
+    "direction": "lower"
+  },
+  "config": {
+    "maxExperiments": 3,
+    "repetitions": 9,
+    "warmups": 1,
+    "confidence": 0.95,
+    "minImprovement": 0.1,
+    "diminishingReturns": 2,
+    "commitAccepted": false
+  }
+}

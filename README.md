@@ -91,6 +91,12 @@ pi update git:github.com/Vincentwei1021/video-shotcraft
 2. Commit and push changes to GitHub.
 3. Always commit before running `pi update --extensions`, because Pi may reset and clean the clone during package reconciliation.
 
+## Optional Scientific Engineering Mode
+
+Use upstream AAE for measured optimization and experiments with isolated Git worktrees, fixed evaluators, paired benchmarks, budgets and recovery. The mode defaults off and leaves existing model, Advisor and goal settings intact.
+
+See the [installation and operating guide](docs/scientific-engineering.md), [ecosystem audit](docs/scientific-engineering-audit.md), and [runnable example](examples/scientific-engineering/README.md). Install the pinned upstream resources with `node scripts/scientific-engineering.mjs install-upstream`, then enable `/scientific on` and invoke `/skill:scientific-engineering`.
+
 ## Backup
 
 ```bash

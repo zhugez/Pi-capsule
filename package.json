@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "test": "node --test scripts/*.test.mjs",
+    "test:scientific": "node --test scripts/scientific-engineering.test.mjs",
+    "scientific": "node scripts/scientific-engineering.mjs",
+    "scientific:example": "node scripts/scientific-example.mjs",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run typecheck && pnpm test",
     "postinstall": "node scripts/sync-config.mjs --models"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^1.5.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "typebox": "^1.3.27"
   },
   "pi": {
     "extensions": [

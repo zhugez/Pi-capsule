@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pi-capsule Scientific Engineering configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Optional settings. Mode activation remains explicit. Repetitions must support (1-confidence)/maxExperiments. Token budgets are admission limits, not prepaid API caps.",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "upstreamRevision": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "default": "70b047997040d2f3a1dac1a10c391ac853593444"
+    },
+    "maxExperiments": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 10
+    },
+    "tokenBudget": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "default": 200000
+    },
+    "runtimeMs": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "default": 1800000
+    },
+    "commandTimeoutMs": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647,
+      "default": 60000
+    },
+    "minImprovement": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMaximum": 1,
+      "default": 0.02
+    },
+    "repetitions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 9
+    },
+    "warmups": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 1
+    },
+    "confidence": {
+      "type": "number",
+      "exclusiveMinimum": 0.5,
+      "exclusiveMaximum": 1,
+      "default": 0.95
+    },
+    "diminishingReturns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "default": 3
+    },
+    "commitAccepted": {
+      "type": "boolean",
+      "default": false
+    },
+    "negativeMemory": {
+      "type": "boolean",
+      "default": true
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string",
+          "minLength": 1,
+          "default": "GPT-6.2 Sol"
+        },
+        "routine": {
+          "type": "string",
+          "minLength": 1,
+          "default": "DeepSeek V4.1 Flash"
+        },
+        "review": {
+          "type": "string",
+          "minLength": 1,
+          "default": "GPT-6.2 Astra"
+        }
+      }
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verification": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "memory": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "telemetry": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}
