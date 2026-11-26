@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test scripts/sync-config.test.mjs",
+    "test": "node --test scripts/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run typecheck && pnpm test",
     "postinstall": "node scripts/sync-config.mjs --models"

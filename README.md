@@ -14,6 +14,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
 - **Settings** — theme, default provider/model, thinking level, compaction overrides, package list.
 - **Providers** — custom `models.json` providers, with literal API keys swapped for `$ENV_VAR` references.
 - **Skills, extensions & prompts** — distributed as a Pi package (`git:github.com/zhugez/pi-capsule`) with skills, extensions, and prompt templates.
+- **Compact checkpoints** — preserve the configured 30% handoff on supported models and save private Markdown checkpoints under `~/.pi/agent/compact-checkpoints/`. Compact appears in the Pulse session dock, with a footer fallback when that dock is unavailable. The extension leaves other reserve settings unchanged. Remove any separately installed copy of `compact-checkpoints.ts` before reloading Capsule.
 - **Integrated pi-pulse extension suite** — automatically synced via `git:github.com/zhugez/pi-pulse`:
   - **Goal Planner (`/goal`)** — conversational goal planning with subtasks, persistent progress tracking, and independent verification auditor.
   - **Interactive Todo (`todo`, `/todos`)** — persistent task engine with state machine (`pending` → `in_progress` → `completed`), dependency blockers (`blockedBy`), active spinner form labels, and live visual task board.
