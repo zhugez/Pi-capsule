@@ -67,6 +67,27 @@ test('excludes the two skills Capsule already provides from Pulse', t => {
   }
 });
 
+test('adds the configured ShotCraft path without replacing local skill filters', t => {
+  const f = fixture(t);
+  const { packages, skills } = JSON.parse(fs.readFileSync(new URL('../agent/settings.json', import.meta.url), 'utf8'));
+  const shotcraft = packages.find(entry => entry.source?.includes('/video-shotcraft@'));
+  const skill = skills.find(entry => entry.endsWith('/video-shotcraft/SKILL.md'));
+  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify({ packages: [shotcraft], skills: [skill] }));
+  const localPackage = { source: 'git:github.com/zhugez/pi-pulse', skills: ['!some-skill'] };
+  fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [localPackage], skills: ['!local-skill'] }));
+
+  const result = f.run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(f.read('settings.json').skills, ['!local-skill', skill]);
+  assert.deepEqual(f.read('settings.json').packages.slice(0, 2), [
+    { ...localPackage, skills: [...localPackage.skills, '!skills/chrome-extensions', '!skills/modern-web-guidance'] },
+    shotcraft,
+  ]);
+  const before = f.snapshot();
+  assert.equal(f.run().status, 0);
+  assert.deepEqual(f.snapshot(), before);
+});
+
 test('dry-run does not change files', t => {
   const f = fixture(t);
   const before = f.snapshot();

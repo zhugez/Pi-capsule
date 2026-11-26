@@ -19,6 +19,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - **Interactive Todo (`todo`, `/todos`)** — persistent task engine with state machine (`pending` → `in_progress` → `completed`), dependency blockers (`blockedBy`), active spinner form labels, and live visual task board.
   - **Advisor Oversight (`ask_advisor`)** — on-demand strategic guidance and review gates on a secondary model, with draft verification and follow-up chains.
   - **Model Pools (`codex-pool`, `workbuddy-pool`)** — multi-account pooling with account labels, per-model rate limits, realm-aware effort levels, and automatic failover.
+  - **Fast Mode (`/fast`)** — bundled Fast processing toggle for OpenAI Responses models, including the local Xingchi API provider.
   - **Code Lens (`code_inspect`)** — syntax diagnostics, unread file edit guards, and instant symbol outlines.
   - **Code Mode (`code_exec`)** — in-sandbox async JavaScript orchestration to run file operations and commands without context bloat.
   - **Loop Guard** — automated detection that blocks repeating identical tool calls with actionable escalation reasons.
@@ -26,12 +27,13 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - **Provider Bridges** — Antigravity (Google OAuth / Gemini / Claude), Gemini Web, and Claude Code CLI with local MCP bridging.
   - **ExoMind Second Brain** — persistent graph-based second brain with typed relations (`REL:CAUSED_BY`) and automated inbox capture.
   - **Ponytail Mode** — senior developer guidance enforcing YAGNI, standard library reuse, and minimal working diffs.
-- **Companion CLIs** — `restore.sh` installs each one if missing (official install script) and restores its config from `home/`:
+- **Companion CLIs** — restore scripts install these tools if missing and restore available configs from `home/`:
   - [no-mistakes](https://github.com/kunchenguid/no-mistakes) — git push gate, plus a global `git gate` alias · `~/.no-mistakes/config.yaml`
   - [rtk](https://github.com/rtk-ai/rtk) — token-saving CLI proxy, hooked into Pi via `rtk init -g --agent pi` · `~/.config/rtk/*.toml`
   - [treehouse](https://github.com/kunchenguid/treehouse) — reusable worktree pool · `~/.config/treehouse/config.toml`
   - [gitleaks](https://github.com/gitleaks/gitleaks) — secret scanner CLI, integrated into global git pre-commit hook and Pi (`/gitleaks`) · `~/.config/git/hooks/pre-commit`
   - [agent-browser](https://github.com/vercel-labs/agent-browser) — fast browser automation CLI for AI agents (Rust CLI + Chrome CDP) · `~/.agent-browser/config.json`
+  - [witr](https://github.com/pranshuparmar/witr) — traces processes and occupied ports. Pi Pulse provides `/skill:witr`; both restore scripts install the CLI if missing.
   - [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) — modern web platform expertise, best practices & browser compatibility CLI · `npx modern-web-guidance` / `~/.agents/skills/modern-web-guidance`
   - [ExoMind](https://github.com/zhugez/ExoMind) — portable knowledge & memory runtime (`exom`)
   - [crapper](https://github.com/unclebob/crapper) + [mutator](https://github.com/unclebob/mutator) — ub-mode's CRAP and mutation gates, behind pi-pulse's `/crap` and `/mutator` · `~/.local/share/ub-tools/` (must stay siblings; wrappers in `~/.local/bin`)
