@@ -88,6 +88,67 @@ test('adds the configured ShotCraft path without replacing local skill filters',
   assert.deepEqual(f.snapshot(), before);
 });
 
+test('preserves runtime preferences, model choices and deliberate provider removals', t => {
+  const f = fixture(t);
+  const repo = {
+    retry: { enabled: true, maxRetries: 8, baseDelayMs: 5000, provider: { timeoutMs: 120000 } },
+    compaction: { keepRecentTokens: 20000, modelOverrides: { 'current/model': { reserveTokens: 1000 }, 'removed/model': { reserveTokens: 500 } } },
+    cacheWarming: 'idle',
+    defaultTools: ['read'],
+    extensionChangelogVersions: { pulse: '1.0.0' },
+  };
+  const local = {
+    retry: { maxRetries: 3, baseDelayMs: 2000 },
+    compaction: { keepRecentTokens: 12000, modelOverrides: { 'current/model': { reserveTokens: 700000 } } },
+    cacheWarming: 'off',
+    defaultTools: ['+codemode'],
+    extensions: ['-extensions/numes-pool.ts'],
+    extensionChangelogVersions: { pulse: '1.1.0' },
+  };
+  fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify(repo));
+  fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify(local));
+  fs.writeFileSync(path.join(f.repo, 'agent', 'models.json'), JSON.stringify({ providers: {
+    shared: { apiKey: '$KEY', baseUrl: 'https://repo.invalid', models: [{ id: 'repo' }] },
+    removed: { apiKey: '$REMOVED', models: [{ id: 'removed' }] },
+  } }));
+  const localModels = { providers: { shared: { apiKey: 'synthetic-secret', baseUrl: 'https://local.invalid', models: [{ id: 'local' }] } } };
+  fs.writeFileSync(path.join(f.target, 'models.json'), JSON.stringify(localModels));
+  const result = f.run('--models');
+  assert.equal(result.status, 0, result.stderr);
+  const actual = f.read('settings.json');
+  for (const [key, value] of Object.entries(local)) assert.deepEqual(actual[key], value);
+  assert.deepEqual(f.read('models.json'), localModels);
+  const before = f.snapshot();
+  assert.equal(f.run('--models').status, 0);
+  assert.deepEqual(f.snapshot(), before);
+});
+
+test('preserves Capsule resource switches and an explicitly empty model catalog', t => {
+  const f = fixture(t);
+  const capsule = { source: 'git:github.com/zhugez/pi-capsule', skills: [], extensions: ['-agent/extensions/auto-warmup.ts', '-agent/extensions/auto-update-check.ts'] };
+  fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [capsule] }));
+  fs.writeFileSync(path.join(f.target, 'models.json'), JSON.stringify({ providers: {} }));
+  assert.equal(f.run('--models').status, 0);
+  assert.deepEqual(f.read('settings.json').packages[0], capsule);
+  assert.deepEqual(f.read('models.json').providers, {});
+  const extensionOnly = { source: capsule.source, extensions: capsule.extensions };
+  fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ packages: [extensionOnly] }));
+  assert.equal(f.run('--models').status, 0);
+  assert.deepEqual(f.read('settings.json').packages[0], extensionOnly);
+  const before = f.snapshot();
+  assert.equal(f.run('--models').status, 0);
+  assert.deepEqual(f.snapshot(), before);
+});
+
+test('seeds model providers on a fresh install and keeps callable WorkBuddy choices', t => {
+  const f = fixture(t);
+  fs.rmSync(path.join(f.target, 'models.json'));
+  fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ defaultProvider: 'workbuddy', defaultModel: 'callable-model' }));
+  assert.equal(f.run('--models').status, 0);
+  assert.equal(f.read('models.json').providers.shared.baseUrl, 'https://example.invalid');
+  assert.equal(f.read('settings.json').defaultModel, 'callable-model');
+});
+
 test('dry-run does not change files', t => {
   const f = fixture(t);
   const before = f.snapshot();
