@@ -158,12 +158,13 @@ function integrity(state: State) {
   for (const cwd of [state.candidate, state.control]) {
     if (digest(state, cwd) !== state.protectedDigest) fail('Protected evaluator or other out-of-scope input changed. Measurements are invalid.');
     for (const p of state.plan.scope) safeFile(cwd, p, true);
-    const extras = git(cwd, ['ls-files', '--others', '--exclude-standard', '-z']).split('\0').filter(Boolean);
+    const extras = git(cwd, ['ls-files', '--others', '-z']).split('\0').filter(Boolean);
     if (extras.some(p => !state.plan.scope.includes(p))) fail('Untracked out-of-scope files in ' + cwd + '. Preserve and inspect them before recovery.');
+    if (extras.length && (cwd === state.control || state.evaluationTree)) fail((cwd === state.control ? 'Control implementation changed' : 'Candidate changed during evaluation') + '. Untracked files invalidate measurements.');
     const staged = git(cwd, ['diff', '--cached', '--name-only', '-z', state.bestTree, '--']).split('\0').filter(Boolean);
     if (staged.some(p => !state.plan.scope.includes(p))) fail('Protected index entries changed.');
   }
-  if (git(state.control, ['diff', state.bestTree, '--']).length) fail('Control implementation changed. Measurements are invalid.');
+  if (git(state.control, ['diff', state.bestTree, '--']).length || git(state.control, ['write-tree']) !== state.bestTree) fail('Control implementation changed. Measurements are invalid.');
 }
 function candidateChanged(state: State): boolean {
   return !!git(state.candidate, ['diff', state.bestTree, '--']).length || !!git(state.candidate, ['ls-files', '--others', '--exclude-standard', '-z']).length;
@@ -410,8 +411,9 @@ export async function operate(root: string, id: string, action: string, data: Re
       // orphan object. Never infer acceptance from HEAD or rerun a commit.
       privateDir(path.join(state.dir, 'recovery'));
       patch(state, path.join(state.dir, 'recovery', 'candidate-' + Date.now() + '.patch'));
+      restore(state);
       if (state.hypothesis) state.results.push({ exp: state.results.length + 1, ...state.hypothesis, status: 'inconclusive', reason: 'Interrupted experiment recovered without acceptance.', reflection: 'Inspect recovery patch and logs before retrying.' });
-      restore(state); delete state.pending; delete state.hypothesis;
+      delete state.pending; delete state.hypothesis;
       state.phase = state.profileLog ? 'ready' : state.baseline !== undefined ? 'baselined' : 'created';
       state.lastError = undefined; state.stopReason = stopReason(state); persist(state); return summary(state);
     }
@@ -447,7 +449,9 @@ export async function operate(root: string, id: string, action: string, data: Re
       const dir = path.join(state.dir, 'report', 'experiments', String(exp).padStart(3, '0')); privateDir(dir);
       const diff = patch(state, path.join(dir, 'change.patch'));
       if (!diff) fail('The candidate has no change to evaluate.');
-      git(state.candidate, ['add', '--', ...state.plan.scope]);
+      const files = tracked(state.candidate);
+      const paths = state.plan.scope.filter(p => files.includes(p) || fs.existsSync(path.join(state.candidate, p)));
+      if (paths.length) git(state.candidate, ['add', '--', ...paths]);
       state.evaluationTree = git(state.candidate, ['write-tree']); persist(state);
       atomic(path.join(dir, 'meta.json'), JSON.stringify({ exp, ...state.hypothesis, status: 'running', tree: state.evaluationTree }));
       const result: Result = { exp, ...state.hypothesis, status: 'inconclusive', reason: '', reflection: '' };
@@ -469,8 +473,7 @@ export async function operate(root: string, id: string, action: string, data: Re
       }
       integrity(state);
       if (result.status === 'keep') {
-        git(state.candidate, ['add', '--', ...state.plan.scope]);
-        result.tree = git(state.candidate, ['write-tree']);
+        result.tree = state.evaluationTree;
         state.pending = result; persist(state);
         if (state.config.commitAccepted) {
           // Explicit plan opt-in only. Normal hooks and signing remain active.

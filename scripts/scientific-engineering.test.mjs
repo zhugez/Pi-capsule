@@ -152,6 +152,103 @@ test('commands cannot change the evaluated candidate and then receive acceptance
   await f.act('recover'); assert.equal(f.read().results.at(-1).status, 'inconclusive');
 });
 
+test('evaluation rejects regenerated deleted scope files across command paths', async t => {
+  for (const mode of ['correctness', 'failed correctness', 'verification', 'benchmark']) {
+    const f = fixture(t);
+    f.put(f.repo, 'generated.txt', 'original generated output');
+    const regenerate = "if(JSON.parse(fs.readFileSync('target.json')).metric<100)fs.writeFileSync('generated.txt','regenerated output');";
+    if (mode === 'verification') f.plan.config.adapters = { verification: [process.execPath, '-e', "const fs=require('fs');" + regenerate], memory: [], telemetry: false };
+    else fs.appendFileSync(path.join(f.repo, mode === 'benchmark' ? 'bench.mjs' : 'check.mjs'), regenerate + (mode === 'failed correctness' ? "if(x.metric<100)process.exit(1);" : ''));
+    if (mode === 'benchmark') f.plan.config.warmups = 1;
+    git(f.repo, 'add', '.'); git(f.repo, 'commit', '-qm', 'generated workload');
+    f.plan.scope.push('generated.txt');
+    await f.ready(); await f.propose(); f.change(80);
+    const before = f.read(); fs.unlinkSync(path.join(before.candidate, 'generated.txt'));
+    await assert.rejects(f.act('evaluate'), /Candidate changed during evaluation/, mode);
+    assert.equal(f.read().phase, 'needs_recovery');
+    assert.equal(f.read().bestTree, before.bestTree);
+    assert.equal(f.read().results.length, before.results.length);
+    assert.equal(fs.readFileSync(path.join(before.candidate, 'generated.txt'), 'utf8'), 'regenerated output');
+    await f.act('recover');
+    assert.equal(fs.readFileSync(path.join(before.candidate, 'generated.txt'), 'utf8'), 'original generated output');
+    assert.equal(f.read().evaluationTree, undefined);
+  }
+});
+
+test('integrity rejects untracked control scope files and ignored evaluation additions', async t => {
+  for (const mode of ['baseline', 'profile', 'benchmark', 'memory', 'candidate ignored', 'control ignored']) {
+    const f = fixture(t);
+    f.plan.scope.push('optional.txt');
+    if (mode.endsWith('ignored')) f.put(f.repo, '.gitignore', 'optional.txt\n');
+    const write = "require('fs').writeFileSync('optional.txt','unexpected input')";
+    if (mode === 'baseline') f.plan.correctness.push([process.execPath, '-e', write]);
+    if (mode === 'profile') f.plan.profile = [process.execPath, '-e', write];
+    if (mode === 'benchmark' || mode === 'control ignored') fs.appendFileSync(path.join(f.repo, 'bench.mjs'), "if(x.metric===100&&process.cwd().endsWith('control')&&fs.existsSync('../trigger'))fs.writeFileSync('optional.txt','unexpected input');");
+    if (mode === 'candidate ignored') fs.appendFileSync(path.join(f.repo, 'check.mjs'), "if(x.metric<100)fs.writeFileSync('optional.txt','unexpected input');");
+    if (mode === 'memory') f.plan.config.adapters = { verification: [], memory: [process.execPath, '-e', write], telemetry: false };
+    git(f.repo, 'add', '.'); git(f.repo, 'commit', '--allow-empty', '-qm', 'generated input workload');
+    f.init();
+    if (mode !== 'baseline') await f.act('baseline');
+    if (!['baseline', 'profile'].includes(mode)) {
+      await f.act('profile'); await f.propose(); f.change(80);
+      f.put(f.read().dir, 'trigger', 'evaluate');
+      if (mode === 'memory') await f.act('evaluate');
+    }
+    const action = mode === 'baseline' || mode === 'profile' ? mode : mode === 'memory' ? 'reflect' : 'evaluate';
+    const error = mode === 'candidate ignored' ? /Candidate changed during evaluation/ : /Control implementation changed/;
+    await assert.rejects(action === 'reflect' ? f.reflect() : f.act(action), error, mode);
+    if (mode !== 'memory') assert.equal(f.read().results.some(r => r.status === 'keep'), false);
+  }
+});
+
+test('accepted deletions tolerate unused scope paths and publish the frozen tree', async t => {
+  const f = fixture(t);
+  f.put(f.repo, 'obsolete.txt', 'remove this scoped file');
+  fs.appendFileSync(path.join(f.repo, 'check.mjs'), "if(x.metric<100)fs.writeFileSync('../evaluated-tree.txt',JSON.parse(fs.readFileSync('../state.json')).evaluationTree);");
+  git(f.repo, 'add', '.'); git(f.repo, 'commit', '-qm', 'optional scope');
+  f.plan.scope.push('obsolete.txt', 'unused.txt');
+  await f.ready(); await f.propose(); f.change(80);
+  fs.unlinkSync(path.join(f.read().candidate, 'obsolete.txt'));
+  const result = await f.act('evaluate'), state = f.read();
+  assert.equal(result.latest.status, 'keep');
+  assert.equal(state.bestTree, fs.readFileSync(path.join(state.dir, 'evaluated-tree.txt'), 'utf8'));
+  for (const arm of ['candidate', 'control']) {
+    assert.equal(fs.existsSync(path.join(state[arm], 'obsolete.txt')), false);
+    assert.equal(fs.existsSync(path.join(state[arm], 'unused.txt')), false);
+    assert.equal(git(state[arm], 'write-tree'), state.bestTree);
+  }
+  const replay = path.join(f.dir, 'replay');
+  git(f.repo, 'worktree', 'add', '--detach', replay, state.sourceHead);
+  git(replay, 'apply', '--index', path.join(state.dir, result.latest.patch));
+  assert.equal(git(replay, 'write-tree'), state.bestTree);
+  await f.reflect(); await f.propose(); f.change(60);
+  assert.equal((await f.act('evaluate')).latest.status, 'keep');
+});
+
+test('failed recovery retries preserve pending bookkeeping until restoration succeeds', async t => {
+  const f = fixture(t); await f.ready(); await f.propose(); f.change(80);
+  f.put(f.read().candidate, 'build-artifact.txt', 'preserve for inspection');
+  const before = f.read();
+  for (let retry = 0; retry < 2; retry++) {
+    await assert.rejects(f.act('recover'), /Untracked out-of-scope/);
+    const state = f.read();
+    assert.deepEqual(state.results, before.results);
+    assert.deepEqual(state.hypothesis, before.hypothesis);
+    assert.equal(state.stopReason, before.stopReason);
+    assert.equal(fs.readFileSync(path.join(state.candidate, 'build-artifact.txt'), 'utf8'), 'preserve for inspection');
+  }
+  fs.unlinkSync(path.join(before.candidate, 'build-artifact.txt'));
+  await f.act('recover');
+  assert.equal(f.read().results.length, before.results.length + 1);
+  assert.equal(f.read().results.at(-1).status, 'inconclusive');
+  assert.equal(f.read().hypothesis, undefined);
+  assert.equal(f.read().phase, 'ready');
+  await f.act('recover');
+  assert.equal(f.read().results.length, before.results.length + 1);
+  await f.propose(); f.change(70);
+  assert.equal((await f.act('evaluate')).latest.status, 'keep');
+});
+
 test('lifecycle, limits, idempotent token accounting and missing usage fail closed', async t => {
   const f = fixture(t, { maxExperiments: 1, tokenBudget: 100 }); f.init();
   await assert.rejects(f.propose(), /Baseline and profile/);
@@ -272,6 +369,33 @@ test('schemas match runtime defaults and reject structurally invalid configurati
   for (const key of Object.keys(defaults).filter(k => !['models', 'adapters'].includes(k))) assert.deepEqual(schema.properties[key].default, defaults[key]);
   assert.equal(Check(schema, { unknown: true }), false);
   assert.equal(Check(schema, { commandTimeoutMs: -1 }), false);
+});
+
+test('plan schema consumer and runtime agree on scope and protected file paths', async t => {
+  const { Check } = await import('typebox/value');
+  const schema = JSON.parse(fs.readFileSync(new URL('../schemas/scientific-plan.schema.json', import.meta.url)));
+  const base = {
+    objective: 'Validate plan paths', kind: 'experiment', constraints: ['Preserve correctness'],
+    scope: ['target.ts'], protectedFiles: ['check.ts'], correctness: [['node', 'check.ts']],
+    benchmark: ['node', 'bench.ts'], profile: ['node', 'profile.ts'], metric: { name: 'time', direction: 'lower' },
+  };
+  for (const field of ['scope', 'protectedFiles']) {
+    for (const file of ['io/target.ts', 'agit/main.ts', 'a/b.ts', '.github/check.ts', 'src/v1.2.ts', 'git/file.ts', '\u2028io/target.ts', '.git\u2028', 'src\u2028/target.ts']) {
+      const plan = { ...base, [field]: [file] };
+      assert.equal(Check(schema, plan), true, field + ': ' + file);
+      assert.doesNotThrow(() => validatePlan(plan));
+    }
+    const invalid = ['/target.ts', '.', '..', './target.ts', '../target.ts', 'src/../target.ts', '.git', '.git/config', 'src/.git/config', 'src/.', 'src/..', 'src//target.ts', 'src/', 'src\\target.ts', 'src\u2028/.git/config', '', '   '];
+    for (let code = 0; code < 32; code++) {
+      const control = String.fromCharCode(code);
+      invalid.push(control + 'target.ts', 'src/' + control + 'target.ts', 'target.ts' + control);
+    }
+    for (const file of invalid) {
+      const plan = { ...base, [field]: [file] };
+      assert.equal(Check(schema, plan), false, field + ': ' + JSON.stringify(file));
+      assert.throws(() => validatePlan(plan));
+    }
+  }
 });
 
 test('configuration alone cannot authorize experiment commits', t => {
