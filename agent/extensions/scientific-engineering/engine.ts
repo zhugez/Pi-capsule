@@ -338,7 +338,8 @@ async function checks(state: State, cwd: string, label: string, signal?: AbortSi
 }
 function patch(state: State, file: string, includeIgnored = false) {
   // Include untracked in-scope additions without staging unrelated paths.
-  const additions = state.plan.scope.filter(p => fs.existsSync(safeFile(state.candidate, p, true)) && !tracked(state.candidate).includes(p));
+  for (const cwd of [state.candidate, state.control]) for (const p of state.plan.scope) safeFile(cwd, p, true);
+  const additions = state.plan.scope.filter(p => fs.existsSync(path.join(state.candidate, p)) && !tracked(state.candidate).includes(p));
   if (additions.length) git(state.candidate, ['add', '--intent-to-add', ...(includeIgnored ? ['--force'] : []), '--', ...additions]);
   const diff = git(state.candidate, ['diff', '--binary', state.bestTree, '--']);
   atomic(file, diff + (diff ? '\n' : ''));
@@ -346,6 +347,7 @@ function patch(state: State, file: string, includeIgnored = false) {
 }
 function restore(state: State) {
   ownership(state);
+  for (const cwd of [state.candidate, state.control]) for (const p of state.plan.scope) safeFile(cwd, p, true);
   delete state.evaluationTree;
   for (const cwd of [state.candidate, state.control]) {
     git(cwd, ['restore', '--source', state.bestTree, '--staged', '--worktree', '--', '.']);

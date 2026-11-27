@@ -302,6 +302,108 @@ test('recovery refuses directories at scope file paths before staging or deletin
   assert.equal(git(before.candidate, 'write-tree'), before.bestTree);
 });
 
+test('recovery preflights both worktrees before capturing pending candidate changes', async t => {
+  for (const arm of ['candidate', 'control']) for (const obstruction of ['directory', 'symlink', 'dangling symlink', 'symlink ancestor', 'file ancestor']) {
+    await t.test(arm + ': ' + obstruction, async t => {
+      const f = fixture(t);
+      f.put(f.repo, 'scope/leaf.txt', 'original scoped input\n');
+      git(f.repo, 'add', '.'); git(f.repo, 'commit', '-qm', 'nested scope');
+      f.plan.scope.push('scope/leaf.txt', 'pending.txt', 'missing/leaf.txt');
+      f.put(f.repo, 'user.txt', 'staged source work\n'); git(f.repo, 'add', 'user.txt');
+      await f.ready(); await f.propose(); f.change(80);
+      const before = f.read();
+      f.put(before.candidate, 'pending.txt', 'pending candidate addition\n');
+      const external = path.join(f.dir, 'external');
+      f.put(external, 'leaf.txt', 'external contents\n');
+      const target = path.join(before[arm], 'scope', 'leaf.txt');
+      fs.unlinkSync(target);
+      let invalid = target;
+      if (obstruction.endsWith('ancestor')) {
+        invalid = path.dirname(target); fs.rmdirSync(invalid);
+      }
+      if (obstruction === 'directory') f.put(invalid, 'evidence.txt', 'directory contents\n');
+      else if (obstruction === 'file ancestor') fs.writeFileSync(invalid, 'ancestor contents\n');
+      else fs.symlinkSync(obstruction === 'dangling symlink' ? path.join(f.dir, 'absent') : obstruction === 'symlink ancestor' ? external : path.join(external, 'leaf.txt'), invalid);
+      const indexes = [f.repo, before.candidate, before.control].map(cwd => {
+        const file = path.resolve(cwd, git(cwd, 'rev-parse', '--git-path', 'index'));
+        return { file, bytes: fs.readFileSync(file) };
+      });
+      const invalidContents = () => obstruction === 'directory' ? fs.readFileSync(path.join(invalid, 'evidence.txt'), 'utf8') : obstruction === 'file ancestor' ? fs.readFileSync(invalid, 'utf8') : fs.readlinkSync(invalid);
+      const contents = invalidContents();
+      for (let retry = 0; retry < 2; retry++) {
+        await assert.rejects(f.act('recover'), /Expected a file|Symlink|Missing or inaccessible/);
+        for (const index of indexes) assert.deepEqual(fs.readFileSync(index.file), index.bytes);
+        for (const cwd of [before.candidate, before.control]) assert.equal(JSON.parse(fs.readFileSync(path.join(cwd, 'target.json'))).metric, cwd === before.candidate ? 80 : 100);
+        assert.equal(fs.readFileSync(path.join(before.candidate, 'pending.txt'), 'utf8'), 'pending candidate addition\n');
+        assert.equal(invalidContents(), contents);
+        assert.equal(fs.readFileSync(path.join(external, 'leaf.txt'), 'utf8'), 'external contents\n');
+        assert.equal(fs.existsSync(path.join(f.dir, 'absent')), false);
+        const failed = f.read();
+        for (const key of ['results', 'hypothesis', 'pending', 'phase', 'bestTree', 'evaluationTree', 'stopReason']) assert.deepEqual(failed[key], before[key]);
+        assert.deepEqual(fs.readdirSync(path.join(before.dir, 'recovery')), []);
+      }
+      fs.renameSync(invalid, path.join(f.dir, 'preserved-obstruction'));
+      await f.act('recover');
+      const recovered = f.read();
+      assert.equal(recovered.phase, 'ready');
+      assert.equal(recovered.results.length, before.results.length + 1);
+      assert.equal(recovered.results.at(-1).status, 'inconclusive');
+      assert.equal(recovered.hypothesis, undefined);
+      assert.equal(recovered.bestTree, before.bestTree);
+      for (const cwd of [before.candidate, before.control]) {
+        assert.equal(git(cwd, 'write-tree'), before.bestTree);
+        assert.equal(fs.readFileSync(path.join(cwd, 'scope/leaf.txt'), 'utf8'), 'original scoped input\n');
+      }
+      const recovery = path.join(before.dir, 'recovery');
+      const savedPatch = fs.readdirSync(recovery).find(p => p.endsWith('.patch'));
+      assert.ok(savedPatch);
+      const replay = path.join(f.dir, 'replay');
+      git(f.repo, 'worktree', 'add', '--detach', replay, before.sourceHead);
+      git(replay, 'apply', '--index', path.join(recovery, savedPatch));
+      assert.equal(JSON.parse(fs.readFileSync(path.join(replay, 'target.json'))).metric, 80);
+      assert.equal(fs.readFileSync(path.join(replay, 'pending.txt'), 'utf8'), 'pending candidate addition\n');
+      await f.act('recover');
+      assert.equal(f.read().results.length, recovered.results.length);
+      assert.deepEqual(fs.readFileSync(indexes[0].file), indexes[0].bytes);
+      assert.equal(fs.readFileSync(path.join(external, 'leaf.txt'), 'utf8'), 'external contents\n');
+    });
+  }
+});
+
+test('restore preflights both worktrees again after recovery capture', async t => {
+  for (const arm of ['candidate', 'control']) {
+    await t.test(arm, async t => {
+      const f = fixture(t); f.plan.scope.push('pending.txt');
+      await f.ready(); await f.propose(); f.change(80);
+      const before = f.read();
+      before.evaluationTree = before.bestTree;
+      fs.writeFileSync(path.join(before.dir, 'state.json'), JSON.stringify(before));
+      f.put(before.candidate, 'pending.txt', 'pending addition\n');
+      const rename = fs.renameSync;
+      let indexes;
+      fs.renameSync = (source, destination) => {
+        rename(source, destination);
+        if (path.dirname(destination) !== path.join(before.dir, 'recovery') || !destination.endsWith('.patch')) return;
+        const target = path.join(before[arm], 'target.json');
+        fs.unlinkSync(target); f.put(target, 'evidence.txt', 'late obstruction\n');
+        indexes = [before.candidate, before.control].map(cwd => {
+          const file = path.resolve(cwd, git(cwd, 'rev-parse', '--git-path', 'index'));
+          return { file, bytes: fs.readFileSync(file) };
+        });
+      };
+      try { await assert.rejects(f.act('recover'), /Expected a file/); }
+      finally { fs.renameSync = rename; }
+      assert.ok(indexes);
+      for (const index of indexes) assert.deepEqual(fs.readFileSync(index.file), index.bytes);
+      assert.equal(fs.readFileSync(path.join(before[arm], 'target.json/evidence.txt'), 'utf8'), 'late obstruction\n');
+      if (arm === 'control') assert.equal(JSON.parse(fs.readFileSync(path.join(before.candidate, 'target.json'))).metric, 80);
+      assert.equal(fs.readFileSync(path.join(before.candidate, 'pending.txt'), 'utf8'), 'pending addition\n');
+      const failed = f.read();
+      for (const key of ['results', 'hypothesis', 'pending', 'phase', 'bestTree', 'evaluationTree', 'stopReason']) assert.deepEqual(failed[key], before[key]);
+    });
+  }
+});
+
 test('accepted deletions tolerate unused scope paths and publish the frozen tree', async t => {
   const f = fixture(t);
   f.put(f.repo, 'obsolete.txt', 'remove this scoped file');
