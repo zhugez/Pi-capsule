@@ -50,6 +50,15 @@
   "quietStartup": true,
   "compaction": {
     "modelOverrides": {
+      "codex-pool/gpt-6.2-sol": {
+        "reserveTokens": 735000
+      },
+      "cliproxy/gemini-3.8-flash-high": {
+        "reserveTokens": 700000
+      },
+      "xingchiapi/gpt-6.1-sol": {
+        "reserveTokens": 700000
+      },
       "openai-codex/gpt-5.6-luna": {
         "reserveTokens": 108800
       },

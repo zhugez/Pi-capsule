@@ -51,14 +51,30 @@ async function fixture(t) {
     setTokens: (next) => { tokens = next; }, setReserve: (next) => { reserve = next; } };
 }
 
+test('packaged settings trigger native compaction just above 30% used context for supported profile models', () => {
+  const packaged = JSON.parse(fs.readFileSync(new URL('../agent/settings.json', import.meta.url), 'utf8'));
+  const settings = sdk.SettingsManager.inMemory(packaged);
+  for (const [provider, id, contextWindow] of [
+    ['codex-pool', 'gpt-6.2-sol', 1_050_000],
+    ['cliproxy', 'gemini-3.8-flash-high', 1_000_000],
+    ['xingchiapi', 'gpt-6.1-sol', 1_000_000],
+  ]) {
+    const compaction = settings.getCompactionSettings({ provider, id });
+    const limit = contextWindow * 3 / 10;
+    assert.equal(compaction.reserveTokens, contextWindow - limit);
+    assert.equal(sdk.shouldCompact(limit, contextWindow, compaction), false);
+    assert.equal(sdk.shouldCompact(limit + 1, contextWindow, compaction), true);
+  }
+});
+
 test('packaged compact footer preserves threshold, unknown usage and non-TUI behavior', async (t) => {
   const h = await fixture(t);
   h.event('turn_end');
-  assert.equal(h.status(), 'Compact 30% · ~153.9k left');
+  assert.equal(h.status(), '○ 󰘨 compact: @30% · ~153.9k left');
   assert.deepEqual(h.styles.at(-1), ['muted', '~153.9k left']);
   for (const [tokens, expected] of [[299_999, '~2 left'], [300_000, '~1 left'], [300_001, 'over threshold'], [null, 'usage unknown']]) {
     h.setTokens(tokens); h.event('turn_end');
-    assert.equal(h.status(), `Compact 30% · ${expected}`);
+    assert.equal(h.status(), `○ 󰘨 compact: @30% · ${expected}`);
   }
   const before = h.status();
   h.event('turn_end', {}, { ...h.ctx, mode: 'rpc' });
@@ -75,14 +91,14 @@ test('compact publishes a scoped snapshot and restores fallback when dock releas
   const snapshots = [];
   h.bus.on('pi-pulse:telemetry:v1', (value) => snapshots.push(value));
   h.event('session_start');
-  assert.equal(h.status(), 'Compact 30% · ~153.9k left');
+  assert.equal(h.status(), '○ 󰘨 compact: @30% · ~153.9k left');
   assert.deepEqual(snapshots.at(-1), { kind: 'compact', scope: 'test-session:xingchiapi/gpt-6.1-sol', data: { tokens: 146_076, limit: 300_000, contextWindow: 1_000_000 } });
   h.bus.emit('pi-pulse:telemetry-dock:v1', { available: true });
   assert.equal(h.status(), undefined);
   h.bus.emit('pi-pulse:telemetry-request:v1', {});
   assert.equal(snapshots.at(-1).data.tokens, 146_076);
   h.bus.emit('pi-pulse:telemetry-dock:v1', { available: false });
-  assert.equal(h.status(), 'Compact 30% · ~153.9k left');
+  assert.equal(h.status(), '○ 󰘨 compact: @30% · ~153.9k left');
   h.event('session_shutdown');
   const count = snapshots.length;
   h.bus.emit('pi-pulse:telemetry-request:v1', {});

@@ -9,6 +9,10 @@ Core workflow:
 4. Re-snapshot after page changes (`agent-browser snapshot -i`)
 5. `agent-browser close` - Close browser when finished
 
+## Scientific Engineering
+
+For optimization, algorithm engineering, performance tuning, measurable quality improvements or experiments, load the scientific-engineering skill. Execution requires explicit `/scientific on`. Preserve existing workflows for other tasks.
+
 ## Working Style
 
 Use `~/.pi/agent/git/github.com/zhugez/pi-pulse/skills/stella/SKILL.md` when drafting or revising English documentation, user-facing messages, or agent instructions where wording matters, or when the user requests Stella. Do not rewrite the user's message unless they ask for a rewrite. Preserve facts and uncertainty. Follow an explicit user request for a different style.

@@ -72,6 +72,16 @@ pi update --extensions
 
 `pi install` and `pi update --extensions` automatically run `node scripts/sync-config.mjs --models` via `postinstall` (and move any duplicate legacy extensions/prompts/skills into `~/.pi/agent/migrated-<date>/`).
 
+Updates follow the package's installation ref. For default-branch installs, reviewed changes must reach `master` before `pi update --extensions` can distribute them.
+
+Config sync also seeds 30% handoff defaults for these model references:
+
+- `codex-pool/gpt-6.2-sol`: 735,000 reserved tokens for a 1,050,000-token window.
+- `cliproxy/gemini-3.8-flash-high`: 700,000 reserved tokens for a 1,000,000-token window.
+- `xingchiapi/gpt-6.1-sol`: 700,000 reserved tokens for a 1,000,000-token window.
+
+Pi compacts when usage exceeds 30% of those windows. Sync adds a default only when both the global reserve and that model's override are absent. Sync preserves other compaction settings, including disabled compaction. Reload or restart Pi after updating.
+
 To preview or run config sync manually:
 
 ```bash
@@ -90,6 +100,12 @@ pi update git:github.com/Vincentwei1021/video-shotcraft
 1. Edit inside `~/.pi/agent/git/github.com/zhugez/pi-capsule` (or your local clone).
 2. Commit and push changes to GitHub.
 3. Always commit before running `pi update --extensions`, because Pi may reset and clean the clone during package reconciliation.
+
+## Optional Scientific Engineering Mode
+
+Use upstream AAE for measured optimization and experiments with isolated Git worktrees, fixed evaluators, paired benchmarks, budgets and recovery. The mode defaults off and leaves existing model, Advisor and goal settings intact.
+
+See the [installation and operating guide](docs/scientific-engineering.md), [ecosystem audit](docs/scientific-engineering-audit.md), and [runnable example](examples/scientific-engineering/README.md). Install the pinned upstream resources with `node scripts/scientific-engineering.mjs install-upstream`, then enable `/scientific on` and invoke `/skill:scientific-engineering`.
 
 ## Backup
 

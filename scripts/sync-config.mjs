@@ -202,9 +202,19 @@ function mergePackages(localPackages = [], repoPackages = []) {
 function mergeSettings(local = {}, repo = {}) {
   // Seed missing defaults while preserving this machine's explicit choices.
   const merged = deepMerge(repo, local);
-  // Operational profiles are complete machine choices, not partial defaults.
+  // Preserve operational profiles without restoring unrelated repo defaults.
   for (const key of ['retry', 'compaction', 'notices', 'extensionChangelogVersions']) {
     if (local[key] !== undefined) merged[key] = local[key];
+  }
+
+  // Seed missing handoff overrides. Keep explicit global and per-model choices intact.
+  if (isPlainObject(local.compaction) && !Object.hasOwn(local.compaction, 'reserveTokens') && (local.compaction.modelOverrides === undefined || isPlainObject(local.compaction.modelOverrides))) {
+    const modelOverrides = { ...local.compaction.modelOverrides };
+    for (const model of ['codex-pool/gpt-6.2-sol', 'cliproxy/gemini-3.8-flash-high', 'xingchiapi/gpt-6.1-sol']) {
+      const defaults = repo.compaction?.modelOverrides?.[model];
+      if (!Object.hasOwn(modelOverrides, model) && isPlainObject(defaults)) modelOverrides[model] = defaults;
+    }
+    if (Object.keys(modelOverrides).length) merged.compaction = { ...local.compaction, modelOverrides };
   }
 
   // Packages exception: union by source identity with local priority
