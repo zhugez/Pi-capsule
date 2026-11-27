@@ -72,6 +72,14 @@ pi update --extensions
 
 `pi install` and `pi update --extensions` automatically run `node scripts/sync-config.mjs --models` via `postinstall` (and move any duplicate legacy extensions/prompts/skills into `~/.pi/agent/migrated-<date>/`).
 
+Config sync also seeds 30% handoff defaults for these model references:
+
+- `codex-pool/gpt-6.2-sol`: 735,000 reserved tokens for a 1,050,000-token window.
+- `cliproxy/gemini-3.8-flash-high`: 700,000 reserved tokens for a 1,000,000-token window.
+- `xingchiapi/gpt-6.1-sol`: 700,000 reserved tokens for a 1,000,000-token window.
+
+Pi compacts when usage exceeds 30% of those windows. Sync adds a default only when both the global reserve and that model's override are absent. Sync preserves other compaction settings, including disabled compaction. Reload or restart Pi after updating.
+
 To preview or run config sync manually:
 
 ```bash

@@ -51,6 +51,22 @@ async function fixture(t) {
     setTokens: (next) => { tokens = next; }, setReserve: (next) => { reserve = next; } };
 }
 
+test('packaged settings trigger native compaction just above 30% used context for supported profile models', () => {
+  const packaged = JSON.parse(fs.readFileSync(new URL('../agent/settings.json', import.meta.url), 'utf8'));
+  const settings = sdk.SettingsManager.inMemory(packaged);
+  for (const [provider, id, contextWindow] of [
+    ['codex-pool', 'gpt-6.2-sol', 1_050_000],
+    ['cliproxy', 'gemini-3.8-flash-high', 1_000_000],
+    ['xingchiapi', 'gpt-6.1-sol', 1_000_000],
+  ]) {
+    const compaction = settings.getCompactionSettings({ provider, id });
+    const limit = contextWindow * 3 / 10;
+    assert.equal(compaction.reserveTokens, contextWindow - limit);
+    assert.equal(sdk.shouldCompact(limit, contextWindow, compaction), false);
+    assert.equal(sdk.shouldCompact(limit + 1, contextWindow, compaction), true);
+  }
+});
+
 test('packaged compact footer preserves threshold, unknown usage and non-TUI behavior', async (t) => {
   const h = await fixture(t);
   h.event('turn_end');

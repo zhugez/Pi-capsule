@@ -149,6 +149,75 @@ test('preserves runtime preferences, model choices and deliberate provider remov
   assert.deepEqual(f.snapshot(), before);
 });
 
+test('ships compact 30% defaults to fresh and existing installs without replacing explicit model overrides', t => {
+  const packaged = JSON.parse(fs.readFileSync(new URL('../agent/settings.json', import.meta.url), 'utf8'));
+  const defaults = {
+    'codex-pool/gpt-6.2-sol': { reserveTokens: 735000 },
+    'cliproxy/gemini-3.8-flash-high': { reserveTokens: 700000 },
+    'xingchiapi/gpt-6.1-sol': { reserveTokens: 700000 },
+  };
+  for (const compaction of [
+    undefined,
+    { enabled: false, keepRecentTokens: 12000 },
+    { enabled: true, keepRecentTokens: 12000, modelOverrides: { 'codex-pool/gpt-6.2-sol': { reserveTokens: 12345 }, 'cliproxy/gemini-3.8-flash-high': {}, 'local/model': { reserveTokens: 42 } } },
+    { enabled: true, modelOverrides: { 'xingchiapi/gpt-6.1-sol': null } },
+    { modelOverrides: null },
+  ]) {
+    const f = fixture(t);
+    fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify(packaged));
+    if (compaction === undefined) fs.unlinkSync(path.join(f.target, 'settings.json'));
+    else fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify({ compaction, defaultModel: 'local-model' }));
+    const auth = f.snapshot()['auth.json'];
+    const result = f.run();
+    assert.equal(result.status, 0, result.stderr);
+    const actual = f.read('settings.json');
+    if (compaction?.modelOverrides === null) assert.equal(actual.compaction.modelOverrides, null);
+    else {
+      for (const [id, value] of Object.entries(defaults)) {
+        const expected = Object.hasOwn(compaction?.modelOverrides ?? {}, id) ? compaction.modelOverrides[id] : value;
+        assert.deepEqual(actual.compaction.modelOverrides[id], expected, id);
+      }
+      if (compaction !== undefined) {
+        assert.equal(Object.hasOwn(actual.compaction.modelOverrides, 'openai-codex/gpt-5.6-luna'), false, 'Do not restore unrelated repo model defaults');
+        for (const [id, value] of Object.entries(compaction.modelOverrides ?? {})) assert.deepEqual(actual.compaction.modelOverrides[id], value);
+      }
+    }
+    if (compaction !== undefined) {
+      assert.equal(actual.defaultModel, 'local-model');
+      for (const [key, value] of Object.entries(compaction)) if (key !== 'modelOverrides') assert.deepEqual(actual.compaction[key], value);
+    }
+    assert.equal(f.snapshot()['auth.json'], auth);
+    const before = f.snapshot();
+    assert.equal(f.run().status, 0);
+    assert.deepEqual(f.snapshot(), before);
+  }
+});
+
+test('sync seeds a missing compaction profile but preserves the effective explicit global reserve', async t => {
+  const { SettingsManager } = await import('@earendil-works/pi-coding-agent');
+  const packaged = JSON.parse(fs.readFileSync(new URL('../agent/settings.json', import.meta.url), 'utf8'));
+  for (const reserveTokens of [undefined, 42000]) {
+    const f = fixture(t);
+    fs.writeFileSync(path.join(f.repo, 'agent', 'settings.json'), JSON.stringify(packaged));
+    const local = { defaultModel: 'local-model' };
+    if (reserveTokens !== undefined) local.compaction = { reserveTokens, keepRecentTokens: 12000, modelOverrides: { 'codex-pool/gpt-6.2-sol': { reserveTokens: 12345 }, 'cliproxy/gemini-3.8-flash-high': {} } };
+    fs.writeFileSync(path.join(f.target, 'settings.json'), JSON.stringify(local));
+    const result = f.run();
+    assert.equal(result.status, 0, result.stderr);
+    const actual = f.read('settings.json');
+    assert.equal(actual.defaultModel, 'local-model');
+    if (local.compaction) assert.deepEqual(actual.compaction, local.compaction);
+    const settings = SettingsManager.inMemory(actual);
+    for (const [provider, id, fallback] of [['codex-pool', 'gpt-6.2-sol', 735000], ['cliproxy', 'gemini-3.8-flash-high', 700000], ['xingchiapi', 'gpt-6.1-sol', 700000]]) {
+      const expected = reserveTokens === undefined ? fallback : provider === 'codex-pool' ? 12345 : reserveTokens;
+      assert.equal(settings.getCompactionReserveTokens({ provider, id }), expected);
+    }
+    const before = f.snapshot();
+    assert.equal(f.run().status, 0);
+    assert.deepEqual(f.snapshot(), before);
+  }
+});
+
 test('preserves Capsule resource switches and an explicitly empty model catalog', t => {
   const f = fixture(t);
   const capsule = { source: 'git:github.com/zhugez/pi-capsule', skills: [], extensions: ['-agent/extensions/auto-warmup.ts', '-agent/extensions/auto-update-check.ts'] };
