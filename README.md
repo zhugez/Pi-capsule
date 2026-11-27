@@ -25,6 +25,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - **Code Mode (`code_exec`)** — in-sandbox async JavaScript orchestration to run file operations and commands without context bloat.
   - **Loop Guard** — automated detection that blocks repeating identical tool calls with actionable escalation reasons.
   - **CRAP & Mutation Gates (`/crap`, `/mutator`)** — Uncle Bob complexity metrics (CRAP <= 10) and mutation testing gates.
+  - **Invar** — first-launch setup offers behavior capture and baseline review, then verifies commands after code changes. No `/invar setup` command is needed.
   - **Provider Bridges** — Antigravity (Google OAuth / Gemini / Claude), Gemini Web, and Claude Code CLI with local MCP bridging.
   - **ExoMind Second Brain** — persistent graph-based second brain with typed relations (`REL:CAUSED_BY`) and automated inbox capture.
   - **Ponytail Mode** — senior developer guidance enforcing YAGNI, standard library reuse, and minimal working diffs.
@@ -35,6 +36,7 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - [gitleaks](https://github.com/gitleaks/gitleaks) — secret scanner CLI, integrated into global git pre-commit hook and Pi (`/gitleaks`) · `~/.config/git/hooks/pre-commit`
   - [agent-browser](https://github.com/vercel-labs/agent-browser) — fast browser automation CLI for AI agents (Rust CLI + Chrome CDP) · `~/.agent-browser/config.json`
   - [witr](https://github.com/pranshuparmar/witr) — traces processes and occupied ports. Pi Pulse provides `/skill:witr`; both restore scripts install the CLI if missing.
+  - [Invar](https://github.com/zhugez/invar) — installed automatically during restore, `pi install`, and package updates on Linux/WSL x86_64. The installer is pinned by commit and SHA-256 and checks the release archive checksum.
   - [modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) — modern web platform expertise, best practices & browser compatibility CLI · `npx modern-web-guidance` / `~/.agents/skills/modern-web-guidance`
   - [ExoMind](https://github.com/zhugez/ExoMind) — portable knowledge & memory runtime (`exom`)
   - [crapper](https://github.com/unclebob/crapper) + [mutator](https://github.com/unclebob/mutator) — ub-mode's CRAP and mutation gates, behind pi-pulse's `/crap` and `/mutator` · `~/.local/share/ub-tools/` (must stay siblings; wrappers in `~/.local/bin`)
@@ -86,8 +88,12 @@ To preview or run config sync manually:
 
 ```bash
 node scripts/sync-config.mjs --dry-run
-node scripts/sync-config.mjs [--models]
+node scripts/sync-config.mjs [--models] [--install-tools]
 ```
+
+Restore and package `postinstall` ensure Invar is installed at `~/.local/bin/invar`. Existing executables are preserved. Manual config sync installs no tools unless you pass `--install-tools`; `--dry-run` never installs tools. Set `PI_INVAR_INSTALL=0` to skip installation. Native Windows and other unsupported platforms receive an informational message; use WSL x86_64 for the prebuilt Invar CLI.
+
+When you next open a trusted project in Pi's interactive or RPC mode, Pulse offers Invar setup automatically. Review the selected commands before capture, then review and approve their captured behavior. Declining the offer or using `/invar off` prevents repeated prompts for that project. `/invar setup` remains available to enable it later. Set `PI_INVAR_AUTO_SETUP=0` to suppress startup offers globally. Capsule does not copy project registrations or startup choices between machines. Each machine requires its own baseline approval.
 
 If ShotCraft is already installed, syncing a new pin does not update its checkout. After manual sync or a Capsule install or update that changes the pin, run this command before starting Pi:
 

@@ -8,7 +8,7 @@ DST="${PI_AGENT_DIR:-$HOME/.pi/agent}"
 mkdir -p "$DST"
 
 # Safe config sync and package setup
-node "$ROOT/scripts/sync-config.mjs" --models
+node "$ROOT/scripts/sync-config.mjs" --models --install-tools
 if command -v pi >/dev/null; then
   pi update --extensions
 fi

@@ -13,7 +13,9 @@ function fixture(t) {
   fs.mkdirSync(path.join(repo, 'scripts'), { recursive: true });
   fs.mkdirSync(path.join(repo, 'agent'), { recursive: true });
   fs.mkdirSync(target, { recursive: true });
-  fs.copyFileSync(new URL('./sync-config.mjs', import.meta.url), path.join(repo, 'scripts/sync-config.mjs'));
+  for (const name of ['sync-config.mjs', 'install-invar.mjs']) {
+    fs.copyFileSync(new URL(`./${name}`, import.meta.url), path.join(repo, 'scripts', name));
+  }
   const put = (dir, name, value) => fs.writeFileSync(path.join(dir, name), JSON.stringify(value));
   put(path.join(repo, 'agent'), 'settings.json', { defaultModel: 'repo', retry: { maxRetries: 3 } });
   put(path.join(repo, 'agent'), 'mcp.json', { mcpServers: { shared: { command: 'repo' } } });
@@ -242,6 +244,32 @@ test('seeds model providers on a fresh install and keeps callable WorkBuddy choi
   assert.equal(f.run('--models').status, 0);
   assert.equal(f.read('models.json').providers.shared.baseUrl, 'https://example.invalid');
   assert.equal(f.read('settings.json').defaultModel, 'callable-model');
+});
+
+test('restore and postinstall ensure Invar while dry-run performs no installation', t => {
+  const f = fixture(t);
+  const preview = f.run('--dry-run', '--install-tools');
+  assert.equal(preview.status, 0, preview.stderr);
+  assert.doesNotMatch(preview.stdout, /Invar:/);
+  assert.equal(f.run().status, 0);
+  const home = path.dirname(path.dirname(f.target));
+  const binary = path.join(home, '.local', 'bin', 'invar');
+  fs.mkdirSync(path.dirname(binary), { recursive: true });
+  fs.writeFileSync(binary, '#!/bin/sh\nexit 0\n', { mode: 0o700 });
+  const env = { ...process.env, HOME: home, USERPROFILE: home, PI_AGENT_DIR: f.target,
+    INVAR_BIN: binary, PI_INVAR_INSTALL: '', npm_lifecycle_event: 'postinstall', PI_CAPSULE_DELAYED_SYNC: '' };
+  const installed = spawnSync(process.execPath, [path.join(f.repo, 'scripts', 'sync-config.mjs')], { env, encoding: 'utf8' });
+  assert.equal(installed.status, 0, installed.stderr);
+  if (process.platform === 'linux' && process.arch === 'x64') {
+    assert.match(installed.stdout, /Invar: already installed/);
+  } else {
+    assert.match(installed.stdout, /Invar: automatic installation supports/);
+  }
+  const restored = spawnSync(process.execPath, [path.join(f.repo, 'scripts', 'sync-config.mjs'), '--install-tools'], {
+    env: { ...env, npm_lifecycle_event: '', PI_CAPSULE_DELAYED_SYNC: '1' }, encoding: 'utf8',
+  });
+  assert.equal(restored.status, 0, restored.stderr);
+  assert.match(restored.stdout, /Invar:/);
 });
 
 test('dry-run does not change files', t => {
