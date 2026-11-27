@@ -106,7 +106,7 @@ export function validatePlan(value: unknown): Plan {
   return value as unknown as Plan;
 }
 function git(cwd: string, args: string[]): string {
-  const r = spawnSync('git', ['-C', cwd, ...args], { encoding: 'utf8', timeout: 30000, maxBuffer: 16 * 1024 * 1024, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
+  const r = spawnSync('git', ['-C', cwd, '--literal-pathspecs', ...args], { encoding: 'utf8', timeout: 30000, maxBuffer: 16 * 1024 * 1024, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
   if (r.error || r.status !== 0) fail('Git ' + args[0] + ' failed: ' + (r.error?.message ?? r.stderr.trim()));
   return r.stdout.replace(/\n$/, '');
 }
@@ -338,7 +338,7 @@ async function checks(state: State, cwd: string, label: string, signal?: AbortSi
 }
 function patch(state: State, file: string, includeIgnored = false) {
   // Include untracked in-scope additions without staging unrelated paths.
-  const additions = state.plan.scope.filter(p => fs.existsSync(path.join(state.candidate, p)) && !tracked(state.candidate).includes(p));
+  const additions = state.plan.scope.filter(p => fs.existsSync(safeFile(state.candidate, p, true)) && !tracked(state.candidate).includes(p));
   if (additions.length) git(state.candidate, ['add', '--intent-to-add', ...(includeIgnored ? ['--force'] : []), '--', ...additions]);
   const diff = git(state.candidate, ['diff', '--binary', state.bestTree, '--']);
   atomic(file, diff + (diff ? '\n' : ''));

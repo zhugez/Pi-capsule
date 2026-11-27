@@ -245,6 +245,63 @@ test('recovery preserves an ignored in-scope file generated during frozen evalua
   assert.equal(f.read().results.length, recovered.results.length);
 });
 
+test('recovery preserves ignored siblings of literal scope paths and records success only after restoration', async t => {
+  const f = fixture(t);
+  f.put(f.repo, '.gitignore', 'cache*.txt\n');
+  git(f.repo, 'add', '--', '.gitignore'); git(f.repo, 'commit', '-qm', 'ignored recovery inputs');
+  f.plan.scope.push('cache[1].txt');
+  f.put(f.repo, 'user.txt', 'staged source work\n'); git(f.repo, 'add', '--', 'user.txt');
+  const sourceIndex = git(f.repo, 'write-tree');
+  await f.ready(); await f.propose(); f.change(80);
+  const before = f.read();
+  f.put(before.candidate, 'cache[1].txt', 'scoped recovery evidence\n');
+  f.put(before.candidate, 'cache1.txt', 'unrelated ignored work\n');
+  for (let retry = 0; retry < 2; retry++) {
+    let failure;
+    try { await f.act('recover'); } catch (error) { failure = error; }
+    assert.equal(fs.existsSync(path.join(before.candidate, 'cache1.txt')), true, 'Recovery must preserve unrelated ignored files');
+    assert.equal(fs.readFileSync(path.join(before.candidate, 'cache1.txt'), 'utf8'), 'unrelated ignored work\n');
+    assert.match(failure?.message ?? '', /Untracked out-of-scope/);
+    assert.deepEqual(f.read().results, before.results);
+    assert.deepEqual(f.read().hypothesis, before.hypothesis);
+    assert.equal(f.read().bestTree, before.bestTree);
+    assert.equal(git(f.repo, 'write-tree'), sourceIndex);
+    assert.equal(git(before.candidate, 'write-tree'), before.bestTree);
+  }
+  const recovery = path.join(before.dir, 'recovery');
+  const savedPatch = fs.readdirSync(recovery).filter(p => p.endsWith('.patch')).sort()[0];
+  assert.ok(savedPatch);
+  const replay = path.join(f.dir, 'literal-recovery-replay');
+  git(f.repo, 'worktree', 'add', '--detach', replay, before.sourceHead);
+  git(replay, 'apply', '--index', path.join(recovery, savedPatch));
+  assert.equal(fs.readFileSync(path.join(replay, 'cache[1].txt'), 'utf8'), 'scoped recovery evidence\n');
+  assert.equal(fs.existsSync(path.join(replay, 'cache1.txt')), false);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(replay, 'target.json'))).metric, 80);
+  fs.renameSync(path.join(before.candidate, 'cache1.txt'), path.join(f.dir, 'preserved-sibling.txt'));
+  await f.act('recover');
+  assert.equal(f.read().results.length, before.results.length + 1);
+  assert.equal(f.read().results.at(-1).status, 'inconclusive');
+  assert.equal(f.read().phase, 'ready');
+  await f.act('recover');
+  assert.equal(f.read().results.length, before.results.length + 1);
+  assert.equal(fs.readFileSync(path.join(f.dir, 'preserved-sibling.txt'), 'utf8'), 'unrelated ignored work\n');
+});
+
+test('recovery refuses directories at scope file paths before staging or deleting their contents', async t => {
+  const f = fixture(t);
+  f.plan.scope.push('optional.txt');
+  f.init();
+  const before = f.read();
+  f.put(before.candidate, 'optional.txt/evidence.txt', 'preserve directory contents\n');
+  let failure;
+  try { await f.act('recover'); } catch (error) { failure = error; }
+  assert.equal(fs.existsSync(path.join(before.candidate, 'optional.txt/evidence.txt')), true, 'Recovery must not delete a directory supplied in place of a scope file');
+  assert.equal(fs.readFileSync(path.join(before.candidate, 'optional.txt/evidence.txt'), 'utf8'), 'preserve directory contents\n');
+  assert.match(failure?.message ?? '', /Expected a file/);
+  assert.deepEqual(f.read().results, before.results);
+  assert.equal(git(before.candidate, 'write-tree'), before.bestTree);
+});
+
 test('accepted deletions tolerate unused scope paths and publish the frozen tree', async t => {
   const f = fixture(t);
   f.put(f.repo, 'obsolete.txt', 'remove this scoped file');
@@ -484,13 +541,28 @@ test('orphan recovery refuses a reused process identity and cancellation kills d
   const marker = path.join(f.read().dir, 'child.json');
   fs.writeFileSync(marker, JSON.stringify({ pid: process.pid, identity: 'unrelated-process' }));
   await assert.rejects(f.act('recover'), /Cannot verify/); fs.unlinkSync(marker);
-  const g = fixture(t), pidFile = path.join(g.dir, 'descendant.pid');
+  const g = fixture(t, { commandTimeoutMs: 10000 }), pidFile = path.join(g.dir, 'descendant.pid');
   g.plan.environment = { PID_FILE: pidFile };
-  g.plan.profile = [process.execPath, '-e', "const fs=require('fs');const {spawn}=require('child_process');const c=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'});fs.writeFileSync(process.env.PID_FILE,String(c.pid));setInterval(()=>{},1000)"];
+  g.plan.profile = [process.execPath, '-e', "const fs=require('fs');const {spawn}=require('child_process');setTimeout(()=>{const c=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'});fs.writeFileSync(process.env.PID_FILE,String(c.pid))},900);setInterval(()=>{},1000)"];
   g.init(); await g.act('baseline');
-  const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 700);
-  await assert.rejects(g.act('profile', {}, controller.signal), /cancelled/); clearTimeout(timer);
-  assert.equal(fs.existsSync(pidFile), true);
+  const controller = new AbortController();
+  await Promise.all([
+    assert.rejects(g.act('profile', {}, controller.signal), /cancelled/),
+    (async () => {
+      try {
+        const deadline = Date.now() + 5000;
+        let pid;
+        while (Date.now() < deadline) {
+          if (fs.existsSync(pidFile)) {
+            pid = Number(fs.readFileSync(pidFile, 'utf8'));
+            if (Number.isSafeInteger(pid) && pid > 0) break;
+          }
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+        assert.ok(Number.isSafeInteger(pid) && pid > 0, 'Wait for a valid descendant PID before cancellation');
+      } finally { controller.abort(); }
+    })(),
+  ]);
   const pid = Number(fs.readFileSync(pidFile, 'utf8'));
   if (process.platform === 'linux' && fs.existsSync('/proc/' + pid + '/stat')) assert.equal(fs.readFileSync('/proc/' + pid + '/stat', 'utf8').split(') ').at(-1).split(' ')[0], 'Z');
   else assert.throws(() => process.kill(pid, 0));
