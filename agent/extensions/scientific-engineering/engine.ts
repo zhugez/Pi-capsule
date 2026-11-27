@@ -336,10 +336,10 @@ async function checks(state: State, cwd: string, label: string, signal?: AbortSi
   const commands = [...state.plan.correctness, ...(state.config.adapters.verification.length ? [state.config.adapters.verification] : [])];
   for (const [i, argv] of commands.entries()) { integrity(state); await run(state, cwd, argv, label + '-correctness-' + i, signal); integrity(state); }
 }
-function patch(state: State, file: string) {
+function patch(state: State, file: string, includeIgnored = false) {
   // Include untracked in-scope additions without staging unrelated paths.
   const additions = state.plan.scope.filter(p => fs.existsSync(path.join(state.candidate, p)) && !tracked(state.candidate).includes(p));
-  if (additions.length) git(state.candidate, ['add', '--intent-to-add', '--', ...additions]);
+  if (additions.length) git(state.candidate, ['add', '--intent-to-add', ...(includeIgnored ? ['--force'] : []), '--', ...additions]);
   const diff = git(state.candidate, ['diff', '--binary', state.bestTree, '--']);
   atomic(file, diff + (diff ? '\n' : ''));
   return diff;
@@ -410,7 +410,7 @@ export async function operate(root: string, id: string, action: string, data: Re
       // A crash after tree/commit creation but before state publication can leave an
       // orphan object. Never infer acceptance from HEAD or rerun a commit.
       privateDir(path.join(state.dir, 'recovery'));
-      patch(state, path.join(state.dir, 'recovery', 'candidate-' + Date.now() + '.patch'));
+      patch(state, path.join(state.dir, 'recovery', 'candidate-' + Date.now() + '.patch'), true);
       restore(state);
       if (state.hypothesis) state.results.push({ exp: state.results.length + 1, ...state.hypothesis, status: 'inconclusive', reason: 'Interrupted experiment recovered without acceptance.', reflection: 'Inspect recovery patch and logs before retrying.' });
       delete state.pending; delete state.hypothesis;

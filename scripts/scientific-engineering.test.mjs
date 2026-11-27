@@ -213,6 +213,38 @@ test('integrity rejects untracked control scope files and ignored evaluation add
   }
 });
 
+test('recovery preserves an ignored in-scope file generated during frozen evaluation', async t => {
+  const f = fixture(t);
+  f.put(f.repo, '.gitignore', 'optional.txt\n');
+  fs.appendFileSync(path.join(f.repo, 'check.mjs'), "if(x.metric<100)fs.writeFileSync('optional.txt','generated evidence');");
+  git(f.repo, 'add', '.'); git(f.repo, 'commit', '-qm', 'ignored generated scope file');
+  f.plan.scope.push('optional.txt');
+  await f.ready(); await f.propose(); f.change(80);
+  const before = f.read();
+  await assert.rejects(f.act('evaluate'), /Candidate changed during evaluation/);
+  assert.equal(f.read().phase, 'needs_recovery');
+  assert.equal(f.read().bestTree, before.bestTree);
+  await f.act('recover');
+  const recovered = f.read();
+  assert.equal(recovered.phase, 'ready');
+  assert.equal(recovered.results.length, before.results.length + 1);
+  assert.equal(fs.existsSync(path.join(recovered.candidate, 'optional.txt')), false);
+  assert.equal(recovered.bestTree, before.bestTree);
+  assert.equal(git(recovered.candidate, 'write-tree'), before.bestTree);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(recovered.candidate, 'target.json'))).metric, 100);
+  const recovery = path.join(recovered.dir, 'recovery');
+  const savedPatch = fs.readdirSync(recovery).find(p => p.endsWith('.patch'));
+  assert.ok(savedPatch);
+  const replay = path.join(f.dir, 'recovery-replay');
+  git(f.repo, 'worktree', 'add', '--detach', replay, before.sourceHead);
+  git(replay, 'restore', '--source', before.bestTree, '--staged', '--worktree', '--', '.');
+  git(replay, 'apply', '--index', path.join(recovery, savedPatch));
+  assert.equal(fs.readFileSync(path.join(replay, 'optional.txt'), 'utf8'), 'generated evidence');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(replay, 'target.json'))).metric, 80);
+  await f.act('recover');
+  assert.equal(f.read().results.length, recovered.results.length);
+});
+
 test('accepted deletions tolerate unused scope paths and publish the frozen tree', async t => {
   const f = fixture(t);
   f.put(f.repo, 'obsolete.txt', 'remove this scoped file');
