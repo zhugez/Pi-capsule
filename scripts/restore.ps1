@@ -27,7 +27,7 @@ function Backup($path) {
 # --- agent config & package setup -------------------------------------------
 $syncScript = Join-Path $Root 'scripts\sync-config.mjs'
 if (Has 'node') {
-  & node $syncScript --models
+  & node $syncScript --models --install-tools
   if (Has 'pi') {
     try { & pi update --extensions } catch { Write-Warning "pi update: $_" }
   }

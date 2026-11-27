@@ -4,7 +4,7 @@
  * Syncs repo agent/ configuration to target PI_AGENT_DIR (~/.pi/agent).
  *
  * Usage:
- *   node scripts/sync-config.mjs [--dry-run] [--models]
+ *   node scripts/sync-config.mjs [--dry-run] [--models] [--install-tools]
  *   node scripts/sync-config.mjs --repair-advisor [--dry-run]
  */
 
@@ -13,6 +13,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { installInvar } from './install-invar.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -691,6 +692,11 @@ for (const d of ${JSON.stringify(delays)}) {
         }
       }
     }
+  }
+
+  if (!isDryRun && (args.includes('--install-tools') ||
+      (process.env.npm_lifecycle_event === 'postinstall' && !process.env.PI_CAPSULE_DELAYED_SYNC))) {
+    console.log(installInvar());
   }
 
   // Print Summary
