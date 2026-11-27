@@ -23,12 +23,14 @@ A portable capsule for my [Pi Coding Agent](https://pi.dev) setup ([Live Console
   - **Fast Mode (`/fast`)** — bundled Fast processing toggle for OpenAI Responses models, including the local Xingchi API provider.
   - **Code Lens (`code_inspect`)** — syntax diagnostics, unread file edit guards, and instant symbol outlines.
   - **Code Mode (`code_exec`)** — in-sandbox async JavaScript orchestration to run file operations and commands without context bloat.
+  - **Traceveil (`/traceveil`)** — on-demand local diagnostics for the current saved Pi branch, plus `/traceveil demo` and `/traceveil doctor`. Reports stay out of model context and session history. The Pulse package supplies the skill.
   - **Loop Guard** — automated detection that blocks repeating identical tool calls with actionable escalation reasons.
   - **CRAP & Mutation Gates (`/crap`, `/mutator`)** — Uncle Bob complexity metrics (CRAP <= 10) and mutation testing gates.
   - **Invar** — first-launch setup offers behavior capture and baseline review, then verifies commands after code changes. No `/invar setup` command is needed.
   - **Provider Bridges** — Antigravity (Google OAuth / Gemini / Claude), Gemini Web, and Claude Code CLI with local MCP bridging.
   - **ExoMind Second Brain** — persistent graph-based second brain with typed relations (`REL:CAUSED_BY`) and automated inbox capture.
   - **Ponytail Mode** — senior developer guidance enforcing YAGNI, standard library reuse, and minimal working diffs.
+- **Traceveil setup** — restore and package install/update install a pinned Traceveil CLI on Linux/WSL x86_64 with glibc 2.34 or newer. Existing executables are preserved. Set `PI_TRACEVEIL_INSTALL=0` to opt out. Other platforms receive source-install guidance. Installation never analyzes sessions.
 - **Companion CLIs** — `restore.sh` installs these tools on Unix/WSL if missing and restores available configs from `home/`:
   - [no-mistakes](https://github.com/kunchenguid/no-mistakes) — git push gate, plus a global `git gate` alias · `~/.no-mistakes/config.yaml`
   - [rtk](https://github.com/rtk-ai/rtk) — token-saving CLI proxy, hooked into Pi via `rtk init -g --agent pi` · `~/.config/rtk/*.toml`
@@ -100,6 +102,23 @@ If ShotCraft is already installed, syncing a new pin does not update its checkou
 ```bash
 pi update git:github.com/Vincentwei1021/video-shotcraft
 ```
+
+### Traceveil
+
+Update the packages, then reload Pi and try the synthetic demo:
+
+```text
+pi update --extensions
+/reload
+/traceveil demo
+/traceveil
+```
+
+The last command analyzes only the current saved Pi session and selected branch. The command requires a saved branch and opens its report in a dialog. Run the full CLI inspection command printed in that report for finding details. Findings are recorded patterns, and missing telemetry remains visible.
+
+The optional installer runs in the existing tool-setup phase of restore or package postinstall. Ordinary config sync, dry-run and delayed sync do not install it. It verifies a commit-pinned installer SHA256 before execution; that installer verifies its pinned release archive. No session data is read during setup.
+
+Set `TRACEVEIL_BIN` to an existing absolute executable path to preserve a custom installation. Missing overrides and optional download failures produce a diagnostic. They do not block config sync. Retry only Traceveil setup with `node scripts/install-traceveil.mjs`, or include it with `node scripts/sync-config.mjs --install-tools`. Set `PI_TRACEVEIL_INSTALL=0` to skip it. Pulse can use a source-built CLI on other platforms through `TRACEVEIL_BIN`; the prebuilt installer remains Linux/WSL x86_64 only.
 
 ### Edit workflow
 

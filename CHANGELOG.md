@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Install the checksum-pinned optional Traceveil CLI during supported tool setup and package postinstall. Preserve existing executables and report skipped or failed installation.
+- Document the shared Pulse command and skill for explicit analysis of the current saved Pi branch.
+
 ## [1.1.0] - 2026-11-02
 
 ### Added
