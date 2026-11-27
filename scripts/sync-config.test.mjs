@@ -13,7 +13,7 @@ function fixture(t) {
   fs.mkdirSync(path.join(repo, 'scripts'), { recursive: true });
   fs.mkdirSync(path.join(repo, 'agent'), { recursive: true });
   fs.mkdirSync(target, { recursive: true });
-  for (const name of ['sync-config.mjs', 'install-invar.mjs']) {
+  for (const name of ['sync-config.mjs', 'install-invar.mjs', 'install-traceveil.mjs']) {
     fs.copyFileSync(new URL(`./${name}`, import.meta.url), path.join(repo, 'scripts', name));
   }
   const put = (dir, name, value) => fs.writeFileSync(path.join(dir, name), JSON.stringify(value));
@@ -26,7 +26,7 @@ function fixture(t) {
   put(target, 'auth.json', { token: 'untouched-secret' });
   const run = (...args) => spawnSync(process.execPath, [path.join(repo, 'scripts/sync-config.mjs'), ...args], {
     encoding: 'utf8',
-    env: { ...process.env, HOME: path.join(root, 'home'), USERPROFILE: path.join(root, 'home'), PI_AGENT_DIR: target, npm_lifecycle_event: '', PI_CAPSULE_DELAYED_SYNC: '1' },
+    env: { ...process.env, HOME: path.join(root, 'home'), USERPROFILE: path.join(root, 'home'), PI_AGENT_DIR: target, PI_TRACEVEIL_INSTALL: '0', npm_lifecycle_event: '', PI_CAPSULE_DELAYED_SYNC: '1' },
   });
   const snapshot = () => Object.fromEntries(fs.readdirSync(target).sort().map(name => [name, fs.readFileSync(path.join(target, name), 'utf8')]));
   const read = name => JSON.parse(fs.readFileSync(path.join(target, name), 'utf8'));
@@ -246,18 +246,20 @@ test('seeds model providers on a fresh install and keeps callable WorkBuddy choi
   assert.equal(f.read('settings.json').defaultModel, 'callable-model');
 });
 
-test('restore and postinstall ensure Invar while dry-run performs no installation', t => {
+test('restore and postinstall ensure companion CLIs while dry-run and delayed sync install nothing', t => {
   const f = fixture(t);
   const preview = f.run('--dry-run', '--install-tools');
   assert.equal(preview.status, 0, preview.stderr);
-  assert.doesNotMatch(preview.stdout, /Invar:/);
+  assert.doesNotMatch(preview.stdout, /Invar:|Traceveil:/);
   assert.equal(f.run().status, 0);
   const home = path.dirname(path.dirname(f.target));
   const binary = path.join(home, '.local', 'bin', 'invar');
   fs.mkdirSync(path.dirname(binary), { recursive: true });
   fs.writeFileSync(binary, '#!/bin/sh\nexit 0\n', { mode: 0o700 });
+  const traceveil = path.join(home, '.local', 'bin', 'traceveil');
+  fs.writeFileSync(traceveil, '#!/bin/sh\nexit 0\n', { mode: 0o700 });
   const env = { ...process.env, HOME: home, USERPROFILE: home, PI_AGENT_DIR: f.target,
-    INVAR_BIN: binary, PI_INVAR_INSTALL: '', npm_lifecycle_event: 'postinstall', PI_CAPSULE_DELAYED_SYNC: '' };
+    INVAR_BIN: binary, PI_INVAR_INSTALL: '', TRACEVEIL_BIN: traceveil, PI_TRACEVEIL_INSTALL: '', npm_lifecycle_event: 'postinstall', PI_CAPSULE_DELAYED_SYNC: '' };
   const installed = spawnSync(process.execPath, [path.join(f.repo, 'scripts', 'sync-config.mjs')], { env, encoding: 'utf8' });
   assert.equal(installed.status, 0, installed.stderr);
   if (process.platform === 'linux' && process.arch === 'x64') {
@@ -270,6 +272,35 @@ test('restore and postinstall ensure Invar while dry-run performs no installatio
   });
   assert.equal(restored.status, 0, restored.stderr);
   assert.match(restored.stdout, /Invar:/);
+  assert.match(restored.stdout, /Traceveil:/);
+  if (process.platform === 'linux' && process.arch === 'x64') {
+    assert.match(installed.stdout, /Traceveil: existing executable preserved/);
+    const optionalFailure = spawnSync(process.execPath, [path.join(f.repo, 'scripts', 'sync-config.mjs'), '--install-tools'], {
+      env: { ...env, TRACEVEIL_BIN: path.join(home, 'missing-traceveil'), npm_lifecycle_event: '', PI_CAPSULE_DELAYED_SYNC: '1' }, encoding: 'utf8',
+    });
+    assert.equal(optionalFailure.status, 0);
+    assert.match(optionalFailure.stderr, /Traceveil was not installed: TRACEVEIL_BIN does not exist/);
+  }
+  const delayed = spawnSync(process.execPath, [path.join(f.repo, 'scripts', 'sync-config.mjs')], {
+    env: { ...env, PI_CAPSULE_DELAYED_SYNC: '1' }, encoding: 'utf8',
+  });
+  assert.equal(delayed.status, 0);
+  assert.doesNotMatch(delayed.stdout, /Invar:|Traceveil:/);
+});
+
+test('dry-run, ordinary sync and delayed postinstall never call the Traceveil installer', t => {
+  const f = fixture(t);
+  const marker = path.join(f.repo, 'traceveil-installer-called');
+  fs.writeFileSync(path.join(f.repo, 'scripts', 'install-traceveil.mjs'),
+    "import fs from 'node:fs'; export function installTraceveil() { fs.writeFileSync(" + JSON.stringify(marker) + ", 'called'); return 'Traceveil: fixture'; }\n");
+  assert.equal(f.run('--dry-run', '--install-tools').status, 0);
+  assert.equal(f.run().status, 0);
+  const delayed = spawnSync(process.execPath, [path.join(f.repo, 'scripts', 'sync-config.mjs')], {
+    env: { ...process.env, HOME: path.dirname(path.dirname(f.target)), PI_AGENT_DIR: f.target, npm_lifecycle_event: 'postinstall', PI_CAPSULE_DELAYED_SYNC: '1', PI_INVAR_INSTALL: '0' },
+    encoding: 'utf8', timeout: 10_000,
+  });
+  assert.equal(delayed.status, 0, delayed.stderr);
+  assert.equal(fs.existsSync(marker), false);
 });
 
 test('dry-run does not change files', t => {

@@ -14,6 +14,7 @@ import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { installInvar } from './install-invar.mjs';
+import { installTraceveil } from './install-traceveil.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -697,6 +698,8 @@ for (const d of ${JSON.stringify(delays)}) {
   if (!isDryRun && (args.includes('--install-tools') ||
       (process.env.npm_lifecycle_event === 'postinstall' && !process.env.PI_CAPSULE_DELAYED_SYNC))) {
     console.log(installInvar());
+    try { console.log(installTraceveil()); }
+    catch (error) { console.warn('Traceveil was not installed: ' + error.message); }
   }
 
   // Print Summary
