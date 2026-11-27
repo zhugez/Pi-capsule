@@ -72,6 +72,8 @@ pi update --extensions
 
 `pi install` and `pi update --extensions` automatically run `node scripts/sync-config.mjs --models` via `postinstall` (and move any duplicate legacy extensions/prompts/skills into `~/.pi/agent/migrated-<date>/`).
 
+Updates follow the package's installation ref. For default-branch installs, reviewed changes must reach `master` before `pi update --extensions` can distribute them.
+
 Config sync also seeds 30% handoff defaults for these model references:
 
 - `codex-pool/gpt-6.2-sol`: 735,000 reserved tokens for a 1,050,000-token window.

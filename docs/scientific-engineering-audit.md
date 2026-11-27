@@ -9,7 +9,7 @@ Inspected locally on 2026-11-27. This audit concerns the installed configuration
 - Pi's core/resource-loader.js, loadProjectContextFiles(), loads the global agent instruction file first, then ancestor instruction files from root toward cwd. loadContextFileFromDir() chooses the first available AGENTS.override.md, AGENTS.md, AGENTS.MD, CLAUDE.md, or CLAUDE.MD in each directory.
 - SYSTEM.md and APPEND_SYSTEM.md have separate global/project resolution. User and system instructions still constrain repository instructions and skills.
 - The active global AGENTS.md requires browser automation through agent-browser, minimal reversible changes, explicit commit authorization, preservation of uncommitted work, and honest verification. Capsule's portable agent/AGENTS.md contains the same major safety rules, with a different subagent preference. Neither is silently synchronized by this integration.
-- Existing uncommitted changes in agent/extensions/compact-checkpoints.ts and scripts/compact-status.test.mjs predated this task. The integration does not edit those files.
+- For the delivered compact presentation and configuration behavior, see [Compact checkpoints and updates](../README.md#update).
 
 ## Existing playbooks, extensions and skills
 
@@ -50,13 +50,13 @@ The installed catalog contained these requested families at audit time:
 | hms/deepseek-v4.1-flash-free | HMS · DeepSeek V4.1 Flash Free |
 | numes-pool/deepseek/deepseek-v4.1-flash:free | numes · DeepSeek V4.1 Flash (free) |
 
-Catalog membership is not proof of usable credentials or successful inference. Capsule's portable models.json did not contain these entries. New defaults use names, with live availability validation and no silent fallback. No provider-specific reference is added to portable model settings.
+Catalog membership is not proof of usable credentials or successful inference. Capsule's portable models.json did not contain these entries. See [model routing](scientific-engineering.md#model-routing-and-optional-adapters) for role selection and [README](../README.md#update) for the separate compaction defaults.
 
 ## Memory, context and telemetry
 
 Pulse extensions/exomind/index.ts registers exom_recall and exom_capture. It uses the installed exom CLI: pi-context --query for recall, and capture --input for findings. EXOMIND_NOTES_ROOT overrides its default Yasna-Memory location. The CLI was available during this audit. AAE memory delivery remains optional.
 
-Compact checkpoints already persist Markdown summaries and cooperate with the Pulse session dock. The existing implementation and user changes remain intact. Scientific state is independent of transcript compaction: only an enable flag and run id enter the session journal. A short run summary is supplied only while the mode is active. Logs and upstream knowledge-base entries load on demand.
+For compact checkpoints, see [README](../README.md). Scientific state is independent of transcript compaction. See [persistence and recovery](scientific-engineering.md#persistence-and-recovery) for session restoration. A short run summary is supplied only while the mode is active. Logs and upstream knowledge-base entries load on demand.
 
 Pulse subscription-usage.ts implements pi-pulse:telemetry:v1, pi-pulse:telemetry-dock:v1 and pi-pulse:telemetry-request:v1. Its inspected receiver accepts compact and fast telemetry kinds. It does not expose an experiment telemetry kind. Capsule therefore publishes its own optional pi-capsule:scientific:v1 event and retains JSONL records. It does not pretend to populate an unsupported Pulse experiment dock.
 

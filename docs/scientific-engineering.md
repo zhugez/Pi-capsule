@@ -117,7 +117,7 @@ Tokens are accounted from completed host assistant messages and scientific_reaso
 
 ## Model routing and optional adapters
 
-scientific_reason accepts architecture, routine or review. Default preferences are GPT-6.2 Sol, DeepSeek V4.1 Flash and GPT-6.2 Astra. Override models with catalog names or exact provider/model references. The tool checks the live available catalog and session model scope. Missing or ambiguous model matches produce a clear error. Choose an exact provider/model reference when multiple providers expose the same preferred name. Credential or provider errors are surfaced and unknown usage stops further experimental admission. No provider id is embedded in the default preferences.
+scientific_reason accepts architecture, routine or review. Default preferences are GPT-6.2 Sol, DeepSeek V4.1 Flash and GPT-6.2 Astra. Override models with a unique normalized full catalog name or model ID, or an exact provider/model reference. Name matching does not use substrings. The tool checks the live available catalog and session model scope. Missing or ambiguous model matches produce a clear error. Choose an exact provider/model reference when multiple providers expose the same preferred name. Credential or provider errors are surfaced and unknown usage stops further experimental admission. No provider id is embedded in the default preferences.
 
 The primary model, Advisor settings, model pools and goal model settings remain unchanged. Role calls use the same native registry streaming interface that Pulse uses. Verification and benchmark decisions are deterministic local operations.
 
@@ -144,7 +144,13 @@ Each run retains:
 
 Files use private permissions where supported. State writes use a temporary file, fsync and rename. Git operations and filesystem writes are not a single transaction. The engine publishes the best checkpoint only after preparing its patch, tree and optional commit. Recovery returns to the last acknowledged state and never repeats an unacknowledged commit automatically. Unacknowledged objects can remain in Git for inspection.
 
-Only one operation owns a run at a time. A live owner prevents recovery. An abandoned lock requires explicit recover, which checks process ownership before restoring anything. New sessions do not automatically select a run. Session journal entries can restore the same session's enable flag and run id. They do not execute commands on startup.
+Only one operation owns a run at a time. A live owner prevents recovery. An abandoned lock requires explicit recover, which checks process ownership before restoring anything.
+
+Recovery checks every scope path in both worktrees before staging candidate additions. Restoration checks both worktrees again before changing either checkout. Missing or deleted scope files are allowed. Directories, symlinks (including dangling links), and unsafe ancestors block these operations.
+
+Git treats scope paths literally, including brackets. Recovery alone force-captures ignored in-scope additions in the candidate patch. Evaluation does not force-add ignored files. Unrelated untracked files, including ignored files, remain available for inspection and can block recovery. Preserve them outside the worktrees before retrying. Recovery records an interrupted hypothesis as inconclusive and clears it only after restoration succeeds.
+
+New sessions do not automatically select a run. Session journal entries can restore the same session's enable flag, run id and commit authorization. They do not execute commands on startup.
 
 Finished worktrees and checkpoint refs are retained deliberately. Inspect or export evidence before removing them. Use normal git worktree remove only after their contents are preserved. Do not use --force or git clean against user work. Remove the corresponding private ref only after the checkpoint is no longer needed.
 
