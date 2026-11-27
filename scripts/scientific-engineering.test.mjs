@@ -630,7 +630,10 @@ test('memory adapter receives reflected JSON and mutations block further executi
 });
 
 test('runtime exhaustion during evaluation cannot keep a partial sample set', async t => {
-  const f = fixture(t); await f.ready(); await f.propose(); f.change(80);
+  const f = fixture(t);
+  fs.appendFileSync(path.join(f.repo, 'bench.mjs'), 'if(x.metric<100)setTimeout(()=>{},5000);');
+  git(f.repo, 'add', 'bench.mjs'); git(f.repo, 'commit', '-qm', 'delayed candidate benchmark');
+  await f.ready(); await f.propose(); f.change(80);
   const s = f.read(); s.startedAt = Date.now() - s.config.runtimeMs + 1800;
   fs.writeFileSync(path.join(s.dir, 'state.json'), JSON.stringify(s));
   const result = await f.act('evaluate');
